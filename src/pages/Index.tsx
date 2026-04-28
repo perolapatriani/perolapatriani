@@ -1,16 +1,32 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import Seo from "@/components/Seo";
+import Hero from "@/components/home/Hero";
+import FeaturedProperties from "@/components/home/FeaturedProperties";
+import NeighborhoodsGrid from "@/components/home/NeighborhoodsGrid";
+import LaunchesSection from "@/components/home/LaunchesSection";
+import Services from "@/components/home/Services";
+import WhyPerola from "@/components/home/WhyPerola";
+import AboutSection from "@/components/home/AboutSection";
+import Testimonials from "@/components/home/Testimonials";
+import BlogSection from "@/components/home/BlogSection";
+import FinalCta from "@/components/home/FinalCta";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+export default function Index() {
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
-    </div>
+    <>
+      <Seo
+        title="Pérola Patriani · Consultoria Imobiliária Boutique"
+        description="Consultoria imobiliária boutique no litoral paulista. Imóveis de alto padrão, lançamentos exclusivos e atendimento estratégico."
+      />
+      <Hero />
+      <FeaturedProperties />
+      <NeighborhoodsGrid />
+      <LaunchesSection />
+      <Services />
+      <WhyPerola />
+      <AboutSection />
+      <Testimonials />
+      <BlogSection />
+      <FinalCta />
+    </>
   );
-};
-
-const Index = PlaceholderIndex;
-
-export default Index;
+}
