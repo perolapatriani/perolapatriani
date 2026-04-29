@@ -39,9 +39,10 @@ export default function Hero() {
         fetchPriority="high"
       />
       {/* Scrim editorial: escurece a esquerda para dar contraste ao texto, deixa a direita arejada */}
-      <div className="absolute inset-0 bg-gradient-to-r from-graphite/55 via-graphite/20 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-pearl/70" />
-      <div className="absolute inset-0 gradient-rose-mist mix-blend-soft-light opacity-60" />
+      {/* Camadas de overlay para legibilidade editorial */}
+      <div className="absolute inset-0 gradient-rose-mist mix-blend-soft-light opacity-50" />
+      <div className="absolute inset-0 bg-gradient-to-r from-graphite/70 via-graphite/35 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-graphite/30 via-transparent to-pearl/50" />
 
       <div className="container-editorial relative z-10 pb-20 pt-40">
         <div className="max-w-3xl space-y-8 animate-blur-in">
