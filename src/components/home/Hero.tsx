@@ -35,7 +35,7 @@ export default function Hero() {
       <img
         src={heroImg}
         alt="Cobertura premium à beira-mar com vista para o oceano"
-        className="absolute inset-0 h-full w-full object-cover scale-105 animate-[zoom-out_18s_ease-out_forwards]"
+        className="absolute inset-0 h-full w-full object-cover scale-105 animate-zoom-out"
         fetchPriority="high"
       />
       {/* Scrim editorial: escurece a esquerda para dar contraste ao texto, deixa a direita arejada */}
