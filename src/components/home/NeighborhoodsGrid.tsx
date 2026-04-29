@@ -6,6 +6,7 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 export default function NeighborhoodsGrid() {
   const { data: neighborhoods = [] } = useNeighborhoods();
   const ref = useScrollReveal<HTMLDivElement>();
+  if (!neighborhoods.length) return null;
 
   return (
     <section className="section-spacing" ref={ref}>
