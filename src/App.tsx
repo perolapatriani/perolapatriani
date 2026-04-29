@@ -18,6 +18,12 @@ import BlogPost from "./pages/BlogPost";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
+import AdminOverview from "./pages/admin/AdminOverview";
+import AdminProperties from "./pages/admin/AdminProperties";
+import AdminLaunches from "./pages/admin/AdminLaunches";
+import AdminNeighborhoods from "./pages/admin/AdminNeighborhoods";
+import AdminTestimonials from "./pages/admin/AdminTestimonials";
+import AdminPosts from "./pages/admin/AdminPosts";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -43,7 +49,14 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/contato" element={<Contact />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/admin" element={<Admin />} />
+              <Route path="/admin" element={<Admin />}>
+                <Route index element={<AdminOverview />} />
+                <Route path="imoveis" element={<AdminProperties />} />
+                <Route path="lancamentos" element={<AdminLaunches />} />
+                <Route path="bairros" element={<AdminNeighborhoods />} />
+                <Route path="depoimentos" element={<AdminTestimonials />} />
+                <Route path="posts" element={<AdminPosts />} />
+              </Route>
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
