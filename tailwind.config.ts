@@ -108,6 +108,10 @@ export default {
           "0%": { opacity: "0", filter: "blur(8px)" },
           "100%": { opacity: "1", filter: "blur(0)" },
         },
+        "zoom-out": {
+          "0%": { transform: "scale(1.12)" },
+          "100%": { transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.4s cubic-bezier(0.22,1,0.36,1)",
@@ -118,6 +122,7 @@ export default {
         "shimmer": "shimmer 2.5s linear infinite",
         "float": "float 6s ease-in-out infinite",
         "blur-in": "blur-in 1.2s cubic-bezier(0.22,1,0.36,1) both",
+        "zoom-out": "zoom-out 18s cubic-bezier(0.22,1,0.36,1) both",
       },
       backgroundImage: {
         "gradient-hero": "var(--gradient-hero)",

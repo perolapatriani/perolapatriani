@@ -35,28 +35,31 @@ export default function Hero() {
       <img
         src={heroImg}
         alt="Cobertura premium à beira-mar com vista para o oceano"
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover scale-105 animate-zoom-out"
         fetchPriority="high"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-pearl/40 via-pearl/15 to-pearl/85" />
-      <div className="absolute inset-0 gradient-rose-mist mix-blend-soft-light opacity-70" />
+      {/* Scrim editorial: escurece a esquerda para dar contraste ao texto, deixa a direita arejada */}
+      {/* Camadas de overlay para legibilidade editorial */}
+      <div className="absolute inset-0 gradient-rose-mist mix-blend-soft-light opacity-50" />
+      <div className="absolute inset-0 bg-gradient-to-r from-graphite/70 via-graphite/35 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-graphite/30 via-transparent to-pearl/50" />
 
       <div className="container-editorial relative z-10 pb-20 pt-40">
         <div className="max-w-3xl space-y-8 animate-blur-in">
-          <div className="inline-flex items-center gap-2 glass-strong rounded-full px-4 py-2">
+          <div className="inline-flex items-center gap-2 glass-strong rounded-full px-4 py-2 shadow-soft">
             <Sparkles className="h-3 w-3 text-rose-burnt" strokeWidth={1.5} />
             <span className="font-editorial text-[10px] uppercase tracking-[0.32em] text-graphite">
               Consultoria Boutique · Litoral Paulista
             </span>
           </div>
 
-          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl leading-[1.05] text-graphite text-balance">
+          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl leading-[1.05] text-pearl text-balance drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]">
             Seu próximo imóvel
-            <span className="block italic text-rose-burnt">merece mais que uma busca.</span>
-            <span className="block">Merece <em className="font-display not-italic">estratégia</em>.</span>
+            <span className="block italic text-blush">merece mais que uma busca.</span>
+            <span className="block">Merece <em className="font-display not-italic text-rose-burnt">estratégia</em>.</span>
           </h1>
 
-          <p className="font-body text-lg md:text-xl text-graphite/80 max-w-xl text-pretty leading-relaxed">
+          <p className="font-body text-lg md:text-xl text-pearl/95 max-w-xl text-pretty leading-relaxed drop-shadow-[0_1px_12px_rgba(0,0,0,0.35)]">
             Consultoria imobiliária inteligente, personalizada e transparente para quem deseja comprar, vender ou investir com segurança no litoral paulista.
           </p>
 
@@ -72,7 +75,7 @@ export default function Hero() {
               href={wa.general()}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 rounded-full glass-strong px-7 py-3.5 text-xs uppercase tracking-[0.22em] text-graphite hover:bg-pearl transition-colors"
+              className="inline-flex items-center gap-3 rounded-full glass-strong px-7 py-3.5 text-xs uppercase tracking-[0.22em] text-graphite hover:bg-pearl transition-colors shadow-soft"
             >
               Falar com Pérola
             </a>

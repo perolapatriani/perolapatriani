@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import PropertyCard from "@/components/PropertyCard";
 import { useFeaturedProperties } from "@/hooks/useContent";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Skeleton } from "@/components/ui/skeleton";
+import { wa } from "@/lib/whatsapp";
 
 export default function FeaturedProperties() {
   const { data: properties = [], isLoading } = useFeaturedProperties(8);
@@ -32,6 +33,24 @@ export default function FeaturedProperties() {
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => <Skeleton key={i} className="aspect-[4/5] rounded-2xl" />)}
+          </div>
+        ) : properties.length === 0 ? (
+          <div className="luxe-card p-12 md:p-16 text-center max-w-2xl mx-auto">
+            <Sparkles className="h-8 w-8 text-rose-burnt mx-auto mb-5" strokeWidth={1.2} />
+            <h3 className="font-display text-3xl md:text-4xl text-graphite mb-4">
+              Curadoria <em className="text-rose-burnt">sob medida</em>
+            </h3>
+            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+              Cada cliente Pérola recebe seleção personalizada. Conte o que procura — preparo opções que ainda não estão na vitrine.
+            </p>
+            <a
+              href={wa.general()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 rounded-full bg-graphite px-7 py-3.5 text-xs uppercase tracking-[0.22em] text-pearl hover:bg-rose-burnt transition-colors"
+            >
+              Solicitar curadoria <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+            </a>
           </div>
         ) : (
           <div ref={emblaRef} className="overflow-hidden -mx-3">
