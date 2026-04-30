@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Sparkles, ArrowRight } from "lucide-react";
 import heroImg from "@/assets/hero-penthouse.jpg";
-import { wa } from "@/lib/whatsapp";
+import { wa, trackWaClick } from "@/lib/whatsapp";
+import { WaLink } from "@/components/WaLink";
 import { useNeighborhoods } from "@/hooks/useContent";
 
 export default function Hero() {
@@ -19,6 +20,7 @@ export default function Hero() {
     e.preventDefault();
     if (code.trim()) {
       // se há código, abre o WhatsApp diretamente com o código
+      trackWaClick({ source: "hero_search", intent: "search", label: "Code search", code: code.trim() });
       window.open(wa.search({ code: code.trim() }), "_blank");
       return;
     }
@@ -71,14 +73,15 @@ export default function Hero() {
               Ver imóveis
               <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 group-hover:translate-x-1" strokeWidth={1.5} />
             </button>
-            <a
+            <WaLink
               href={wa.general()}
-              target="_blank"
-              rel="noopener noreferrer"
+              source="hero"
+              intent="general"
+              label="Falar com Pérola"
               className="inline-flex items-center gap-3 rounded-full glass-strong px-7 py-3.5 text-xs uppercase tracking-[0.22em] text-graphite hover:bg-pearl transition-colors shadow-soft"
             >
               Falar com Pérola
-            </a>
+            </WaLink>
           </div>
         </div>
 

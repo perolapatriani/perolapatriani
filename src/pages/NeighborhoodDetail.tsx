@@ -3,6 +3,7 @@ import Seo from "@/components/Seo";
 import PropertyCard from "@/components/PropertyCard";
 import { useNeighborhoods, useProperties } from "@/hooks/useContent";
 import { wa } from "@/lib/whatsapp";
+import { WaLink } from "@/components/WaLink";
 
 export default function NeighborhoodDetail() {
   const { slug } = useParams();
@@ -27,10 +28,10 @@ export default function NeighborhoodDetail() {
       <section className="container-editorial py-16">
         <div className="grid lg:grid-cols-3 gap-10 mb-14">
           <div className="lg:col-span-2 text-graphite/80 leading-relaxed text-lg font-display">{n.description}</div>
-          <a href={wa.neighborhood(n.name)} target="_blank" rel="noopener noreferrer"
+          <WaLink href={wa.neighborhood(n.name)} source="neighborhood_detail" intent="neighborhood" label={n.name}
             className="self-start rounded-full bg-graphite px-7 py-4 text-center text-xs uppercase tracking-[0.22em] text-pearl hover:bg-rose-burnt transition-colors">
             Tenho interesse no bairro
-          </a>
+          </WaLink>
         </div>
 
         <h2 className="font-display text-3xl text-graphite mb-8">Imóveis em {n.name}</h2>

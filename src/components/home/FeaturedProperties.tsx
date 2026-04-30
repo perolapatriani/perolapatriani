@@ -6,6 +6,7 @@ import { useFeaturedProperties } from "@/hooks/useContent";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { wa } from "@/lib/whatsapp";
+import { WaLink } from "@/components/WaLink";
 
 export default function FeaturedProperties() {
   const { data: properties = [], isLoading } = useFeaturedProperties(8);
@@ -43,14 +44,15 @@ export default function FeaturedProperties() {
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
               Cada cliente Pérola recebe seleção personalizada. Conte o que procura — preparo opções que ainda não estão na vitrine.
             </p>
-            <a
+            <WaLink
               href={wa.general()}
-              target="_blank"
-              rel="noopener noreferrer"
+              source="featured_properties"
+              intent="general"
+              label="Solicitar curadoria"
               className="inline-flex items-center gap-3 rounded-full bg-graphite px-7 py-3.5 text-xs uppercase tracking-[0.22em] text-pearl hover:bg-rose-burnt transition-colors"
             >
               Solicitar curadoria <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
-            </a>
+            </WaLink>
           </div>
         ) : (
           <div ref={emblaRef} className="overflow-hidden -mx-3">

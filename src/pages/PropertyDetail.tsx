@@ -3,6 +3,7 @@ import { ArrowLeft, BedDouble, Maximize2, Car, Bath, MapPin } from "lucide-react
 import Seo from "@/components/Seo";
 import { useProperty } from "@/hooks/useContent";
 import { formatPrice, wa } from "@/lib/whatsapp";
+import { WaLink } from "@/components/WaLink";
 
 export default function PropertyDetail() {
   const { slug } = useParams();
@@ -58,10 +59,10 @@ export default function PropertyDetail() {
             <div className="glass-strong rounded-3xl p-8 sticky top-28 space-y-5">
               <p className="font-editorial text-xs uppercase tracking-[0.3em] text-rose-burnt">Falar sobre este imóvel</p>
               <h3 className="font-display text-2xl text-graphite">Atendimento consultivo direto com Pérola</h3>
-              <a href={wa.property(p.code, p.title)} target="_blank" rel="noopener noreferrer"
+              <WaLink href={wa.property(p.code, p.title)} source="property_detail" intent="property" label={p.title} code={p.code} value={20}
                 className="block text-center rounded-full bg-graphite py-4 text-xs uppercase tracking-[0.22em] text-pearl hover:bg-rose-burnt transition-colors">
                 Conversar no WhatsApp
-              </a>
+              </WaLink>
             </div>
           </aside>
         </div>

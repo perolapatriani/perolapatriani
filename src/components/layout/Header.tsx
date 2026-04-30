@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { Menu, X, MessageCircle } from "lucide-react";
 import logo from "@/assets/logo-perola.jpg";
 import { wa } from "@/lib/whatsapp";
+import { WaLink } from "@/components/WaLink";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -72,15 +73,16 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <a
+          <WaLink
             href={wa.general()}
-            target="_blank"
-            rel="noopener noreferrer"
+            source="header"
+            intent="general"
+            label="Fale comigo"
             className="hidden md:inline-flex items-center gap-2 rounded-full bg-graphite px-5 py-2.5 text-xs uppercase tracking-[0.2em] text-pearl transition-all duration-500 hover:bg-rose-burnt hover:shadow-elegant"
           >
             <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.5} />
             Fale comigo
-          </a>
+          </WaLink>
 
           <button
             onClick={() => setOpen((v) => !v)}
@@ -116,15 +118,16 @@ export default function Header() {
               {item.label}
             </NavLink>
           ))}
-          <a
+          <WaLink
             href={wa.general()}
-            target="_blank"
-            rel="noopener noreferrer"
+            source="header_mobile"
+            intent="general"
+            label="Fale comigo no WhatsApp"
             className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-graphite px-6 py-3.5 text-xs uppercase tracking-[0.2em] text-pearl"
           >
             <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
             Fale comigo no WhatsApp
-          </a>
+          </WaLink>
         </nav>
       </div>
     </header>

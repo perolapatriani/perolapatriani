@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { useLaunches } from "@/hooks/useContent";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { wa } from "@/lib/whatsapp";
+import { WaLink } from "@/components/WaLink";
 
 export default function LaunchesSection() {
   const { data: launches = [] } = useLaunches();
@@ -47,15 +48,16 @@ export default function LaunchesSection() {
                 </li>
               ))}
             </ul>
-            <a
+            <WaLink
               href={wa.launch(featured.name)}
-              target="_blank"
-              rel="noopener noreferrer"
+              source="launches_section"
+              intent="launch"
+              label={featured.name}
               className="group inline-flex items-center gap-3 rounded-full bg-blush px-7 py-3.5 text-xs uppercase tracking-[0.22em] text-graphite transition-all duration-500 hover:bg-pearl mt-4"
             >
               Quero conhecer
               <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 group-hover:translate-x-1" strokeWidth={1.5} />
-            </a>
+            </WaLink>
           </div>
         </div>
       </div>
