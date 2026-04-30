@@ -1,4 +1,5 @@
 import { forwardRef, type AnchorHTMLAttributes, type MouseEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { trackWaClick, type WaSource, type WaIntent } from "@/lib/whatsapp";
 
 interface WaLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -8,6 +9,8 @@ interface WaLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   label?: string;
   code?: string | null;
   value?: number;
+  /** Após abrir o WhatsApp em nova aba, redireciona a aba atual para /obrigado. */
+  redirectToThanks?: boolean;
 }
 
 /**
@@ -15,10 +18,17 @@ interface WaLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
  * segurança e dispara o evento de conversão `whatsapp_click` em GA4/GTM/Meta.
  */
 export const WaLink = forwardRef<HTMLAnchorElement, WaLinkProps>(
-  ({ href, source, intent, label, code, value, onClick, children, ...rest }, ref) => {
+  ({ href, source, intent, label, code, value, redirectToThanks, onClick, children, ...rest }, ref) => {
+    const navigate = useNavigate();
     const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
       trackWaClick({ source, intent, label, code, value });
       onClick?.(e);
+      if (redirectToThanks && !e.defaultPrevented) {
+        // Deixa o navegador abrir o WhatsApp em nova aba e leva o usuário ao "obrigado".
+        setTimeout(() => {
+          navigate(`/obrigado?from=${source}&intent=${intent}`);
+        }, 150);
+      }
     };
     return (
       <a
