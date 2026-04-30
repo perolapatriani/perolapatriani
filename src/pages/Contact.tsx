@@ -2,7 +2,8 @@ import { useState } from "react";
 import { z } from "zod";
 import { MessageCircle, Instagram, MapPin } from "lucide-react";
 import Seo from "@/components/Seo";
-import { wa, whatsappLink, INSTAGRAM_URL } from "@/lib/whatsapp";
+import { wa, whatsappLink, trackWaClick, INSTAGRAM_URL } from "@/lib/whatsapp";
+import { WaLink } from "@/components/WaLink";
 
 const schema = z.object({
   name: z.string().trim().min(2, "Informe seu nome").max(100),
@@ -26,6 +27,7 @@ export default function Contact() {
     }
     setErrors({});
     const msg = `Olá Pérola! Sou ${r.data.name} (${r.data.phone}).\n\n${r.data.message}`;
+    trackWaClick({ source: "contact_form", intent: "contact_form", label: r.data.name, value: 10 });
     window.open(whatsappLink(msg), "_blank");
   };
 
@@ -66,7 +68,7 @@ export default function Contact() {
           <aside className="lg:col-span-5 space-y-5">
             <div className="glass-strong rounded-3xl p-8 space-y-5">
               <h3 className="font-display text-2xl text-graphite">Atendimento direto</h3>
-              <a href={wa.general()} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-graphite story-link"><MessageCircle className="h-4 w-4 text-rose-burnt" strokeWidth={1.5} /> (13) 99129-6030</a>
+              <WaLink href={wa.general()} source="contact_page" intent="general" label="Phone (13) 99129-6030" className="flex items-center gap-3 text-graphite story-link"><MessageCircle className="h-4 w-4 text-rose-burnt" strokeWidth={1.5} /> (13) 99129-6030</WaLink>
               <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-graphite story-link"><Instagram className="h-4 w-4 text-rose-burnt" strokeWidth={1.5} /> @perolapatriani.imoveis</a>
               <p className="flex items-start gap-3 text-graphite"><MapPin className="h-4 w-4 mt-0.5 text-rose-burnt" strokeWidth={1.5} /> Litoral Paulista — Atendimento sob agendamento</p>
             </div>

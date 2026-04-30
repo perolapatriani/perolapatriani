@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Instagram, MessageCircle, MapPin, Mail } from "lucide-react";
 import logo from "@/assets/logo-perola.jpg";
 import { wa, INSTAGRAM_URL, TIKTOK_URL, YOUTUBE_URL } from "@/lib/whatsapp";
+import { WaLink } from "@/components/WaLink";
 
 const TikTokIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -49,10 +50,10 @@ export default function Footer() {
                 className="grid place-items-center h-10 w-10 rounded-full border border-pearl/20 hover:border-blush hover:bg-blush/10 transition-colors">
                 <YouTubeIcon className="h-4 w-4" />
               </a>
-              <a href={wa.general()} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"
+              <WaLink href={wa.general()} source="footer" intent="general" label="WhatsApp icon" aria-label="WhatsApp"
                 className="grid place-items-center h-10 w-10 rounded-full border border-pearl/20 hover:border-blush hover:bg-blush/10 transition-colors">
                 <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
-              </a>
+              </WaLink>
             </div>
           </div>
 
@@ -80,9 +81,9 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-pearl/75">
               <li className="flex items-start gap-3">
                 <MessageCircle className="h-4 w-4 mt-0.5 text-blush" strokeWidth={1.5} />
-                <a href={wa.general()} target="_blank" rel="noopener noreferrer" className="story-link">
+                <WaLink href={wa.general()} source="footer_phone" intent="general" label="Phone (13) 99129-6030" className="story-link">
                   (13) 99129-6030
-                </a>
+                </WaLink>
               </li>
               <li className="flex items-start gap-3">
                 <Instagram className="h-4 w-4 mt-0.5 text-blush" strokeWidth={1.5} />

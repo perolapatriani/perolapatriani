@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { wa } from "@/lib/whatsapp";
+import { WaLink } from "@/components/WaLink";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 export default function FinalCta() {
@@ -18,15 +19,17 @@ export default function FinalCta() {
           <p className="mt-8 text-muted-foreground max-w-xl mx-auto">
             Agende uma conversa consultiva com Pérola e descubra o que torna a busca certa, leve e eficiente.
           </p>
-          <a
+          <WaLink
             href={wa.schedule()}
-            target="_blank"
-            rel="noopener noreferrer"
+            source="final_cta"
+            intent="schedule"
+            label="Agendar atendimento"
+            value={5}
             className="group inline-flex items-center gap-3 mt-10 rounded-full bg-graphite px-9 py-4 text-xs uppercase tracking-[0.24em] text-pearl shadow-elegant transition-all duration-700 hover:bg-rose-burnt"
           >
             Agendar atendimento
             <ArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" strokeWidth={1.5} />
-          </a>
+          </WaLink>
         </div>
       </div>
     </section>

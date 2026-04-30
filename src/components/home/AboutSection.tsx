@@ -1,6 +1,7 @@
 import portrait from "@/assets/perola-portrait.jpg";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { wa } from "@/lib/whatsapp";
+import { WaLink } from "@/components/WaLink";
 
 export default function AboutSection() {
   const ref = useScrollReveal<HTMLDivElement>();
@@ -34,14 +35,15 @@ export default function AboutSection() {
                 Especializada em imóveis de médio e alto padrão, lançamentos selecionados e investimento imobiliário inteligente, sua atuação é guiada por dados, sensibilidade estética e comprometimento absoluto com cada cliente.
               </p>
             </div>
-            <a
+            <WaLink
               href={wa.general()}
-              target="_blank"
-              rel="noopener noreferrer"
+              source="about"
+              intent="general"
+              label="Conheça meu trabalho"
               className="inline-flex items-center gap-2 mt-4 story-link text-sm uppercase tracking-[0.22em] text-graphite"
             >
               Conheça meu trabalho →
-            </a>
+            </WaLink>
           </div>
         </div>
       </div>

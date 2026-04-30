@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import Seo from "@/components/Seo";
 import { useLaunch } from "@/hooks/useContent";
 import { wa } from "@/lib/whatsapp";
+import { WaLink } from "@/components/WaLink";
 
 export default function LaunchDetail() {
   const { slug } = useParams();
@@ -34,10 +35,10 @@ export default function LaunchDetail() {
           <aside>
             <div className="glass-strong rounded-3xl p-8 space-y-5 sticky top-28">
               <h3 className="font-display text-2xl text-graphite">Quero conhecer este lançamento</h3>
-              <a href={wa.launch(l.name)} target="_blank" rel="noopener noreferrer"
+              <WaLink href={wa.launch(l.name)} source="launch_detail" intent="launch" label={l.name} value={15}
                 className="block text-center rounded-full bg-graphite py-4 text-xs uppercase tracking-[0.22em] text-pearl hover:bg-rose-burnt transition-colors">
                 Falar com Pérola
-              </a>
+              </WaLink>
             </div>
           </aside>
         </div>
