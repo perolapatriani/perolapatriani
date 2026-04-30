@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { MessageCircle, Instagram, MapPin } from "lucide-react";
 import Seo from "@/components/Seo";
@@ -13,6 +14,7 @@ const schema = z.object({
 
 export default function Contact() {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const navigate = useNavigate();
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -28,7 +30,8 @@ export default function Contact() {
     setErrors({});
     const msg = `Olá Pérola! Sou ${r.data.name} (${r.data.phone}).\n\n${r.data.message}`;
     trackWaClick({ source: "contact_form", intent: "contact_form", label: r.data.name, value: 10 });
-    window.open(whatsappLink(msg), "_blank");
+    window.open(whatsappLink(msg), "_blank", "noopener,noreferrer");
+    navigate("/obrigado?from=contact_form&intent=contact_form");
   };
 
   return (

@@ -25,6 +25,7 @@ export default function FinalCta() {
             intent="schedule"
             label="Agendar atendimento"
             value={5}
+            redirectToThanks
             className="group inline-flex items-center gap-3 mt-10 rounded-full bg-graphite px-9 py-4 text-xs uppercase tracking-[0.24em] text-pearl shadow-elegant transition-all duration-700 hover:bg-rose-burnt"
           >
             Agendar atendimento
