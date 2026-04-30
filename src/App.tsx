@@ -16,6 +16,7 @@ import About from "./pages/About";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Contact from "./pages/Contact";
+import Thanks from "./pages/Thanks";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import AdminOverview from "./pages/admin/AdminOverview";
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/contato" element={<Contact />} />
+              <Route path="/obrigado" element={<Thanks />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<Admin />}>
                 <Route index element={<AdminOverview />} />
