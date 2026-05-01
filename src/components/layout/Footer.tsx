@@ -4,18 +4,22 @@ import logo from "@/assets/logo-perola.jpg";
 import { wa, INSTAGRAM_URL, TIKTOK_URL, YOUTUBE_URL } from "@/lib/whatsapp";
 import { WaLink } from "@/components/WaLink";
 
-const TikTokIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+const TikTokIcon = forwardRef<SVGSVGElement, { className?: string }>(({ className }, ref) => (
+  <svg ref={ref} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
   </svg>
-);
+));
+TikTokIcon.displayName = "TikTokIcon";
 
-const YouTubeIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+import { forwardRef } from "react";
+
+const YouTubeIcon = forwardRef<SVGSVGElement, { className?: string }>(({ className }, ref) => (
+  <svg ref={ref} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.5C5.12 20 12 20 12 20s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.83Z" />
     <path d="m9.75 15.02 5.5-3.27-5.5-3.27Z" />
   </svg>
-);
+));
+YouTubeIcon.displayName = "YouTubeIcon";
 
 export default function Footer() {
   return (
