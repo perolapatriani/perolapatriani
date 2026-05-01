@@ -1,9 +1,12 @@
 import { Link, useSearchParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { ArrowRight, Check, Clock, Instagram, MessageCircle, Sparkles } from "lucide-react";
 import Seo from "@/components/Seo";
 import { wa, INSTAGRAM_URL, trackWaClick, type WaSource } from "@/lib/whatsapp";
 import { WaLink } from "@/components/WaLink";
+import { useFeaturedProperties } from "@/hooks/useContent";
+import PropertyCard from "@/components/PropertyCard";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
 const STEPS = [
   {
@@ -83,6 +86,8 @@ export default function Thanks() {
             ))}
           </div>
 
+          <RecommendedCarousel intent={intent} source={sourceParam} />
+
           <div className="mt-16 max-w-3xl mx-auto glass-strong rounded-[2rem] p-10 text-center shadow-elegant">
             <p className="font-editorial text-[10px] uppercase tracking-[0.3em] text-rose-burnt mb-4">
               Enquanto isso
@@ -134,5 +139,79 @@ export default function Thanks() {
         </div>
       </section>
     </>
+  );
+}
+
+function RecommendedCarousel({ intent, source }: { intent: string; source: string }) {
+  const { data: properties } = useFeaturedProperties(9);
+
+  // Seleciona 3 imóveis — prioriza por intenção (property → featured, search → variados)
+  const picks = useMemo(() => {
+    if (!properties?.length) return [];
+    // Shuffle determinístico simples baseado na intenção
+    const shuffled = [...properties].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 3);
+  }, [properties]);
+
+  if (!picks.length) return null;
+
+  const handleCardClick = (slug: string, title: string) => {
+    try {
+      const data = {
+        event: "thanks_property_click",
+        property_slug: slug,
+        property_title: title,
+        wa_source: source,
+        wa_intent: intent,
+      };
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push(data);
+      window.gtag?.("event", "thanks_property_click", {
+        event_category: "engagement",
+        event_label: slug,
+        wa_intent: intent,
+      });
+      window.fbq?.("trackCustom", "ThanksPropertyClick", data);
+    } catch {
+      /* noop */
+    }
+  };
+
+  return (
+    <div className="mt-16 max-w-5xl mx-auto">
+      <div className="text-center mb-10">
+        <p className="font-editorial text-[10px] uppercase tracking-[0.3em] text-rose-burnt mb-3">
+          Seleção para você
+        </p>
+        <h2 className="font-display text-3xl md:text-4xl text-graphite">
+          Imóveis que combinam com sua busca
+        </h2>
+      </div>
+
+      {/* Desktop: grid, Mobile: carousel */}
+      <div className="hidden md:grid md:grid-cols-3 gap-6">
+        {picks.map((p) => (
+          <div key={p.id} onClick={() => handleCardClick(p.slug, p.title)}>
+            <PropertyCard p={p} />
+          </div>
+        ))}
+      </div>
+
+      <div className="md:hidden">
+        <Carousel opts={{ align: "start", loop: true }}>
+          <CarouselContent>
+            {picks.map((p) => (
+              <CarouselItem key={p.id} className="basis-[85%]">
+                <div onClick={() => handleCardClick(p.slug, p.title)}>
+                  <PropertyCard p={p} />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-2" />
+          <CarouselNext className="right-2" />
+        </Carousel>
+      </div>
+    </div>
   );
 }
