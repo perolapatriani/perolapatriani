@@ -1,9 +1,12 @@
 import { Link, useSearchParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { ArrowRight, Check, Clock, Instagram, MessageCircle, Sparkles } from "lucide-react";
 import Seo from "@/components/Seo";
 import { wa, INSTAGRAM_URL, trackWaClick, type WaSource } from "@/lib/whatsapp";
 import { WaLink } from "@/components/WaLink";
+import { useFeaturedProperties } from "@/hooks/useContent";
+import PropertyCard from "@/components/PropertyCard";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
 const STEPS = [
   {
