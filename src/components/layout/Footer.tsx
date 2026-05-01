@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { Instagram, MessageCircle, MapPin, Mail } from "lucide-react";
 import logo from "@/assets/logo-perola.jpg";
@@ -10,8 +11,6 @@ const TikTokIcon = forwardRef<SVGSVGElement, { className?: string }>(({ classNam
   </svg>
 ));
 TikTokIcon.displayName = "TikTokIcon";
-
-import { forwardRef } from "react";
 
 const YouTubeIcon = forwardRef<SVGSVGElement, { className?: string }>(({ className }, ref) => (
   <svg ref={ref} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
