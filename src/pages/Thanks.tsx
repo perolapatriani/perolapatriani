@@ -86,6 +86,8 @@ export default function Thanks() {
             ))}
           </div>
 
+          <RecommendedCarousel intent={intent} source={sourceParam} />
+
           <div className="mt-16 max-w-3xl mx-auto glass-strong rounded-[2rem] p-10 text-center shadow-elegant">
             <p className="font-editorial text-[10px] uppercase tracking-[0.3em] text-rose-burnt mb-4">
               Enquanto isso
