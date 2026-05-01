@@ -187,12 +187,6 @@
   }
 
   .scroll-reveal {
-    opacity: 0;
-    transform: translateY(28px);
-    transition: opacity 1s var(--ease-luxe), transform 1s var(--ease-luxe);
-  }
-  .scroll-reveal.is-visible,
-  .is-visible > .scroll-reveal {
     opacity: 1;
     transform: translateY(0);
   }
