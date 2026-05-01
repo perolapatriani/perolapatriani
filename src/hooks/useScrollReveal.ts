@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 
-/** Reveal-on-scroll: adiciona classe `is-visible` quando o elemento entra na viewport. */
+/** Reveal-on-scroll: adiciona classe `is-visible` quando o elemento entra na viewport.
+ *  Aplica tanto no próprio elemento quanto em filhos com `.scroll-reveal`. */
 export function useScrollReveal<T extends HTMLElement = HTMLDivElement>() {
   const ref = useRef<T | null>(null);
 
@@ -8,8 +9,16 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>() {
     const el = ref.current;
     if (!el) return;
 
-    if (typeof IntersectionObserver === "undefined") {
+    const reveal = () => {
       el.classList.add("is-visible");
+      // Also reveal any child that carries .scroll-reveal
+      el.querySelectorAll(".scroll-reveal").forEach((child) =>
+        child.classList.add("is-visible")
+      );
+    };
+
+    if (typeof IntersectionObserver === "undefined") {
+      reveal();
       return;
     }
 
@@ -17,12 +26,12 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            el.classList.add("is-visible");
+            reveal();
             observer.unobserve(el);
           }
         });
       },
-      { threshold: 0.12, rootMargin: "0px 0px -60px 0px" }
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
     );
 
     observer.observe(el);
