@@ -1,7 +1,7 @@
 // WhatsApp helper — gera links com mensagem contextual e rastreia conversões
 export const WHATSAPP_NUMBER = "5513991296030";
 export const INSTAGRAM_URL = "https://instagram.com/perolapatriani.imoveis";
-export const TIKTOK_URL = "https://tiktok.com/@pérolapatriani";
+export const TIKTOK_URL = "https://www.tiktok.com/@perolapatriani";
 export const YOUTUBE_URL = "https://www.youtube.com/@P%C3%A9rolaPatriani";
 
 export type WaSource =
