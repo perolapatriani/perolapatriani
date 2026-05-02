@@ -9,7 +9,7 @@ export default function FinalCta() {
     <section className="section-spacing relative overflow-hidden" ref={ref}>
       <div className="absolute inset-0 gradient-hero" />
       <div className="absolute inset-0 bg-noise" />
-      <div className="container-editorial relative z-10 scroll-reveal">
+      <div className="container-editorial relative z-10">
         <div className="glass-strong rounded-[2.5rem] p-10 md:p-20 text-center max-w-4xl mx-auto shadow-elegant">
           <p className="eyebrow mb-6">Próximo passo</p>
           <h2 className="font-display text-4xl md:text-6xl lg:text-7xl text-graphite leading-[1.05] text-balance">

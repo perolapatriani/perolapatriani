@@ -40,7 +40,7 @@ export default function WhyPerola() {
   const ref = useScrollReveal<HTMLDivElement>();
   return (
     <section className="section-spacing bg-gradient-pearl" ref={ref}>
-      <div className="container-editorial scroll-reveal">
+      <div className="container-editorial">
         <div className="grid lg:grid-cols-12 gap-14 items-center">
           <div className="lg:col-span-5 space-y-6">
             <p className="eyebrow">Por que escolher Pérola</p>
