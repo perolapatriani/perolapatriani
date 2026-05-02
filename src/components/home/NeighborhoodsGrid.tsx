@@ -10,7 +10,7 @@ export default function NeighborhoodsGrid() {
 
   return (
     <section className="section-spacing" ref={ref}>
-      <div className="container-editorial scroll-reveal">
+      <div className="container-editorial">
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-4">
           <p className="eyebrow">Encontre por bairro</p>
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-graphite text-balance">

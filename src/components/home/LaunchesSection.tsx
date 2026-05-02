@@ -12,7 +12,7 @@ export default function LaunchesSection() {
 
   return (
     <section className="section-spacing bg-graphite text-pearl overflow-hidden" ref={ref}>
-      <div className="container-editorial scroll-reveal">
+      <div className="container-editorial">
         <div className="grid lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7 relative">
             <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-elegant">

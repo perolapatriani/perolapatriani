@@ -7,7 +7,7 @@ export default function AboutSection() {
   const ref = useScrollReveal<HTMLDivElement>();
   return (
     <section className="section-spacing" ref={ref}>
-      <div className="container-editorial scroll-reveal">
+      <div className="container-editorial">
         <div className="grid lg:grid-cols-12 gap-14 items-center">
           <div className="lg:col-span-5 relative">
             <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-elegant">

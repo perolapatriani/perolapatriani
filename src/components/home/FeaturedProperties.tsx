@@ -15,7 +15,7 @@ export default function FeaturedProperties() {
 
   return (
     <section className="section-spacing bg-gradient-soft" ref={ref}>
-      <div className="container-editorial scroll-reveal">
+      <div className="container-editorial">
         <div className="flex flex-wrap items-end justify-between gap-6 mb-14">
           <div className="max-w-2xl space-y-4">
             <p className="eyebrow">Imóveis em evidência</p>
