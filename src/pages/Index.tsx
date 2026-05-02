@@ -18,7 +18,7 @@ export default function Index() {
         description="Consultoria imobiliária boutique no litoral paulista. Imóveis de alto padrão, lançamentos exclusivos e atendimento estratégico."
       />
       <Hero />
-      <div style={{background:'red',color:'white',padding:'40px',fontSize:'24px',zIndex:9999,position:'relative'}}>DEBUG: Content after Hero should be here</div>
+      <FeaturedProperties />
       <NeighborhoodsGrid />
       <LaunchesSection />
       <Services />
