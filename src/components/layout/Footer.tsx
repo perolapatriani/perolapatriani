@@ -100,7 +100,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-3">
                 <Mail className="h-4 w-4 mt-0.5 text-blush" strokeWidth={1.5} />
-                <span>CRECI registrado</span>
+                <span>CRECI 234421</span>
               </li>
             </ul>
           </div>
