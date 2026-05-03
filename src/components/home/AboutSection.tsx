@@ -10,8 +10,8 @@ export default function AboutSection() {
       <div className="container-editorial">
         <div className="grid lg:grid-cols-12 gap-14 items-center">
           <div className="lg:col-span-5 relative">
-            <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-elegant">
-              <img src={portrait} alt="Pérola Patriani, consultora imobiliária" loading="lazy" className="h-full w-full object-cover" />
+            <div className="aspect-square rounded-3xl overflow-hidden shadow-elegant">
+              <img src={portrait} alt="Pérola Patriani, consultora imobiliária" loading="lazy" className="h-full w-full object-cover object-top" />
             </div>
             <div className="absolute -bottom-6 -left-6 hidden md:block glass-strong rounded-2xl p-5 max-w-[200px]">
               <p className="font-editorial text-[10px] uppercase tracking-[0.3em] text-rose-burnt">Pérola Patriani</p>
