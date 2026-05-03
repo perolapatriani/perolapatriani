@@ -14,7 +14,7 @@ export default function FinalCta() {
           <p className="eyebrow mb-6">Próximo passo</p>
           <h2 className="font-display text-4xl md:text-6xl lg:text-7xl text-graphite leading-[1.05] text-balance">
             Seu imóvel ideal existe.
-            <span className="block italic text-rose-burnt mt-2">Vamos encontrá-lo com estratégia.</span>
+            <span className="block italic text-rose-burnt mt-2" style={{ wordBreak: 'keep-all', overflowWrap: 'normal' }}>Vamos encontrá‑lo com estratégia.</span>
           </h2>
           <p className="mt-8 text-muted-foreground max-w-xl mx-auto">
             Agende uma conversa consultiva com Pérola e descubra o que torna a busca certa, leve e eficiente.
