@@ -9,9 +9,9 @@ export default function AboutSection() {
     <section className="section-spacing" ref={ref}>
       <div className="container-editorial">
         <div className="grid lg:grid-cols-12 gap-14 items-center">
-          <div className="lg:col-span-5 relative">
-            <div className="aspect-square rounded-3xl overflow-hidden shadow-elegant">
-              <img src={portrait} alt="Pérola Patriani, consultora imobiliária" loading="lazy" className="h-full w-full object-cover object-top" />
+          <div className="lg:col-span-5 relative flex justify-center">
+            <div className="aspect-[3/4] w-72 md:w-80 lg:w-full max-w-sm rounded-3xl overflow-hidden shadow-elegant">
+              <img src={portrait} alt="Pérola Patriani, consultora imobiliária" loading="lazy" className="h-full w-full object-cover object-[center_20%]" />
             </div>
             <div className="absolute -bottom-6 -left-6 hidden md:block glass-strong rounded-2xl p-5 max-w-[200px]">
               <p className="font-editorial text-[10px] uppercase tracking-[0.3em] text-rose-burnt">Pérola Patriani</p>
