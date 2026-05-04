@@ -23,6 +23,7 @@ type Property = {
   neighborhood_name: string | null;
   cover_url: string | null;
   photos: string[];
+  video_url: string | null;
   status: string;
   is_featured: boolean;
   is_new: boolean;
@@ -32,7 +33,7 @@ const empty: Property = {
   title: "", slug: "", code: "", property_type: "Apartamento", purpose: "venda",
   price: null, bedrooms: 0, suites: 0, parking: 0, area_m2: null,
   description: "", neighborhood_name: "", cover_url: null, photos: [],
-  status: "ativo", is_featured: false, is_new: false,
+  video_url: null, status: "ativo", is_featured: false, is_new: false,
 };
 
 export default function AdminProperties() {
