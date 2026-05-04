@@ -14,8 +14,8 @@ export default function Index() {
   return (
     <>
       <Seo
-        title="Pérola Patriani · Consultoria Imobiliária Boutique"
-        description="Consultoria imobiliária boutique no litoral paulista. Imóveis de alto padrão, lançamentos exclusivos e atendimento estratégico."
+        title="Pérola Patriani · Consultoria Imobiliária"
+        description="Consultoria imobiliária no litoral paulista. Imóveis de alto padrão, lançamentos exclusivos e atendimento estratégico."
       />
       <Hero />
       <FeaturedProperties />

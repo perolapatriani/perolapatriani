@@ -8,7 +8,7 @@ interface SeoProps {
 }
 
 const DEFAULT_DESC =
-  "Consultoria imobiliária boutique no litoral paulista. Imóveis de alto padrão, lançamentos e atendimento consultivo com Pérola Patriani.";
+  "Consultoria imobiliária no litoral paulista. Imóveis de alto padrão, lançamentos e atendimento consultivo com Pérola Patriani.";
 
 export default function Seo({ title, description = DEFAULT_DESC, image, path = "" }: SeoProps) {
   const fullTitle = title.includes("Pérola") ? title : `${title} · Pérola Patriani`;

@@ -51,7 +51,7 @@ export default function Hero() {
           <div className="inline-flex items-center gap-2 glass-strong rounded-full px-4 py-2 shadow-soft">
             <Sparkles className="h-3 w-3 text-rose-burnt" strokeWidth={1.5} />
             <span className="font-editorial text-[10px] uppercase tracking-[0.32em] text-graphite">
-              Consultoria Boutique · Litoral Paulista
+              Consultoria Imobiliária · Litoral Paulista
             </span>
           </div>
 

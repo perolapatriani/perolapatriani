@@ -38,7 +38,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="font-display text-xl text-pearl/85 leading-relaxed max-w-md">
-              Estratégia, transparência e elegância em cada negociação. Consultoria imobiliária boutique no litoral paulista.
+              Estratégia, transparência e elegância em cada negociação. Consultoria imobiliária no litoral paulista.
             </p>
             <div className="flex items-center gap-3 pt-2">
               <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Instagram"
