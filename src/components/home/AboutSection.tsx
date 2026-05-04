@@ -29,7 +29,7 @@ export default function AboutSection() {
             </p>
             <div className="space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                Pérola Patriani é referência em consultoria imobiliária boutique no litoral paulista. Une visão estratégica de mercado a um atendimento próximo, humano e detalhista — exatamente o que clientes exigentes buscam.
+                Pérola Patriani é referência em consultoria imobiliária no litoral paulista. Une visão estratégica de mercado a um atendimento próximo, humano e detalhista — exatamente o que clientes exigentes buscam.
               </p>
               <p>
                 Especializada em imóveis de médio e alto padrão, lançamentos selecionados e investimento imobiliário inteligente, sua atuação é guiada por dados, sensibilidade estética e comprometimento absoluto com cada cliente.
