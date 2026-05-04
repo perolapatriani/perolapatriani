@@ -53,6 +53,23 @@ export default function PropertyDetail() {
             <div className="prose max-w-none text-graphite/80 leading-relaxed">
               <p>{p.description}</p>
             </div>
+
+            {p.video_url && (
+              <div className="mt-8">
+                <p className="font-editorial text-xs uppercase tracking-[0.3em] text-rose-burnt mb-4 flex items-center gap-2">
+                  <Play className="h-3 w-3" /> Tour em vídeo
+                </p>
+                <div className="aspect-video rounded-3xl overflow-hidden bg-champagne">
+                  <iframe
+                    src={getEmbedUrl(p.video_url)}
+                    title={`Vídeo - ${p.title}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <aside className="lg:col-span-1">
