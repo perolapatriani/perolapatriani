@@ -133,6 +133,10 @@ export default function AdminProperties() {
             <TextArea value={editing.description ?? ""} onChange={(e) => onChange("description", e.target.value)} rows={5} />
           </Field>
 
+          <Field label="Vídeo (URL do YouTube ou Vimeo)" hint="Cole o link completo do vídeo">
+            <TextInput value={editing.video_url ?? ""} onChange={(e) => onChange("video_url", e.target.value || null)} placeholder="https://www.youtube.com/watch?v=..." />
+          </Field>
+
           <ImageUploader
             value={editing.photos}
             onChange={(urls) => setEditing((p) => p ? { ...p, photos: urls, cover_url: p.cover_url ?? urls[0] ?? null } : p)}
