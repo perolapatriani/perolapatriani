@@ -1,9 +1,19 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, BedDouble, Maximize2, Car, Bath, MapPin } from "lucide-react";
+import { ArrowLeft, BedDouble, Maximize2, Car, Bath, MapPin, Play } from "lucide-react";
 import Seo from "@/components/Seo";
 import { useProperty } from "@/hooks/useContent";
 import { formatPrice, wa } from "@/lib/whatsapp";
 import { WaLink } from "@/components/WaLink";
+
+function getEmbedUrl(url: string): string {
+  // YouTube
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  // Vimeo
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  return url;
+}
 
 export default function PropertyDetail() {
   const { slug } = useParams();
@@ -53,6 +63,23 @@ export default function PropertyDetail() {
             <div className="prose max-w-none text-graphite/80 leading-relaxed">
               <p>{p.description}</p>
             </div>
+
+            {p.video_url && (
+              <div className="mt-8">
+                <p className="font-editorial text-xs uppercase tracking-[0.3em] text-rose-burnt mb-4 flex items-center gap-2">
+                  <Play className="h-3 w-3" /> Tour em vídeo
+                </p>
+                <div className="aspect-video rounded-3xl overflow-hidden bg-champagne">
+                  <iframe
+                    src={getEmbedUrl(p.video_url)}
+                    title={`Vídeo - ${p.title}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <aside className="lg:col-span-1">
