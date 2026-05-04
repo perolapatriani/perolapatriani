@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, BedDouble, Maximize2, Car, Bath, MapPin } from "lucide-react";
+import { ArrowLeft, BedDouble, Maximize2, Car, Bath, MapPin, Play } from "lucide-react";
 import Seo from "@/components/Seo";
 import { useProperty } from "@/hooks/useContent";
 import { formatPrice, wa } from "@/lib/whatsapp";
