@@ -1,11 +1,12 @@
 import { useEffect, useState, ReactNode } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Building2, Sparkles, MapPin, MessageSquareQuote, FileText, LayoutDashboard, LogOut } from "lucide-react";
+import { Building2, Sparkles, MapPin, MessageSquareQuote, FileText, LayoutDashboard, LogOut, Users } from "lucide-react";
 import Seo from "@/components/Seo";
 
 const navItems = [
   { to: "/admin", label: "Visão geral", icon: LayoutDashboard, end: true },
+  { to: "/admin/leads", label: "Leads", icon: Users },
   { to: "/admin/imoveis", label: "Imóveis", icon: Building2 },
   { to: "/admin/lancamentos", label: "Lançamentos", icon: Sparkles },
   { to: "/admin/bairros", label: "Bairros", icon: MapPin },
