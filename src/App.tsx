@@ -25,6 +25,7 @@ import AdminLaunches from "./pages/admin/AdminLaunches";
 import AdminNeighborhoods from "./pages/admin/AdminNeighborhoods";
 import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminPosts from "./pages/admin/AdminPosts";
+import AdminLeads from "./pages/admin/AdminLeads";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<Admin />}>
                 <Route index element={<AdminOverview />} />
+                <Route path="leads" element={<AdminLeads />} />
                 <Route path="imoveis" element={<AdminProperties />} />
                 <Route path="lancamentos" element={<AdminLaunches />} />
                 <Route path="bairros" element={<AdminNeighborhoods />} />
