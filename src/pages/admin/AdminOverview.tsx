@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useFeaturedProperties, useLaunches, usePosts, useTestimonials, useNeighborhoods } from "@/hooks/useContent";
 
 export default function AdminOverview() {
@@ -8,6 +10,14 @@ export default function AdminOverview() {
   const { data: posts = [] } = usePosts();
   const { data: testimonials = [] } = useTestimonials();
   const { data: neighborhoods = [] } = useNeighborhoods();
+  const { data: leads = [] } = useQuery({
+    queryKey: ["contact_leads"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("contact_leads").select("id").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const Tile = ({ title, count, hint, to }: { title: string; count: number; hint: string; to: string }) => (
     <Link to={to} className="luxe-card p-8 hover:shadow-elegant transition block">
@@ -19,7 +29,8 @@ export default function AdminOverview() {
 
   return (
     <div className="space-y-10">
-      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <Tile title="Leads" count={leads.length} hint="Mensagens recebidas" to="/admin/leads" />
         <Tile title="Imóveis" count={properties.length} hint="Em destaque" to="/admin/imoveis" />
         <Tile title="Lançamentos" count={launches.length} hint="Empreendimentos" to="/admin/lancamentos" />
         <Tile title="Bairros" count={neighborhoods.length} hint="Regiões" to="/admin/bairros" />

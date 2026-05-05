@@ -5,21 +5,30 @@ import { MessageCircle, Instagram, MapPin } from "lucide-react";
 import Seo from "@/components/Seo";
 import { wa, whatsappLink, trackWaClick, INSTAGRAM_URL } from "@/lib/whatsapp";
 import { WaLink } from "@/components/WaLink";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const schema = z.object({
   name: z.string().trim().min(2, "Informe seu nome").max(100),
   phone: z.string().trim().min(8, "Informe um telefone válido").max(20),
+  email: z.string().trim().email("Informe um e-mail válido").max(255).optional().or(z.literal("")),
   message: z.string().trim().min(5, "Conte um pouco sobre sua busca").max(800),
 });
 
 export default function Contact() {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [sending, setSending] = useState(false);
   const navigate = useNavigate();
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const data = { name: String(fd.get("name") ?? ""), phone: String(fd.get("phone") ?? ""), message: String(fd.get("message") ?? "") };
+    const data = {
+      name: String(fd.get("name") ?? ""),
+      phone: String(fd.get("phone") ?? ""),
+      email: String(fd.get("email") ?? ""),
+      message: String(fd.get("message") ?? ""),
+    };
     const r = schema.safeParse(data);
     if (!r.success) {
       const errs: Record<string, string> = {};
@@ -28,9 +37,25 @@ export default function Contact() {
       return;
     }
     setErrors({});
+    setSending(true);
+
+    // Salva lead no banco
+    try {
+      await supabase.from("contact_leads").insert({
+        name: r.data.name,
+        phone: r.data.phone,
+        email: r.data.email || "",
+        message: r.data.message,
+        source: "contact_page",
+      });
+    } catch {
+      // Silencia erros de persistência — o WhatsApp segue normalmente
+    }
+
     const msg = `Olá Pérola! Sou ${r.data.name} (${r.data.phone}).\n\n${r.data.message}`;
     trackWaClick({ source: "contact_form", intent: "contact_form", label: r.data.name, value: 10 });
     window.open(whatsappLink(msg), "_blank", "noopener,noreferrer");
+    setSending(false);
     navigate("/obrigado?from=contact_form&intent=contact_form");
   };
 
@@ -59,12 +84,17 @@ export default function Contact() {
               {errors.phone && <p className="text-xs text-destructive mt-1">{errors.phone}</p>}
             </div>
             <div>
+              <label className="font-editorial text-[10px] uppercase tracking-[0.3em] text-graphite block mb-2">E-mail</label>
+              <input name="email" type="email" maxLength={255} className="w-full rounded-xl bg-pearl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-burnt/40" placeholder="Opcional" />
+              {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
+            </div>
+            <div>
               <label className="font-editorial text-[10px] uppercase tracking-[0.3em] text-graphite block mb-2">Mensagem</label>
               <textarea name="message" rows={5} maxLength={800} className="w-full rounded-xl bg-pearl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-burnt/40" />
               {errors.message && <p className="text-xs text-destructive mt-1">{errors.message}</p>}
             </div>
-            <button type="submit" className="rounded-full bg-graphite px-8 py-4 text-xs uppercase tracking-[0.22em] text-pearl hover:bg-rose-burnt transition-colors">
-              Enviar pelo WhatsApp
+            <button type="submit" disabled={sending} className="rounded-full bg-graphite px-8 py-4 text-xs uppercase tracking-[0.22em] text-pearl hover:bg-rose-burnt transition-colors disabled:opacity-50">
+              {sending ? "Enviando…" : "Enviar pelo WhatsApp"}
             </button>
           </form>
 
