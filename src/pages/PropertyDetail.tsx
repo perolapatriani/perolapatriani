@@ -3,6 +3,7 @@ import { ArrowLeft, BedDouble, Maximize2, Car, Bath, MapPin, Play } from "lucide
 import Seo from "@/components/Seo";
 import { useProperty } from "@/hooks/useContent";
 import { formatPrice, wa } from "@/lib/whatsapp";
+import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
 import { WaLink } from "@/components/WaLink";
 
 function getEmbedUrl(url: string): string {
@@ -90,6 +91,7 @@ export default function PropertyDetail() {
                 className="block text-center rounded-full bg-graphite py-4 text-xs uppercase tracking-[0.22em] text-pearl hover:bg-rose-burnt transition-colors">
                 Conversar no WhatsApp
               </WaLink>
+              <ScheduleVisitDialog propertyTitle={p.title} propertyCode={p.code} />
             </div>
           </aside>
         </div>
