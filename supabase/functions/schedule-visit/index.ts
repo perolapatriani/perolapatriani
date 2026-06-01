@@ -152,6 +152,52 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Notify owner about the new scheduling
+    try {
+      const OWNER_EMAIL = "perolapatriani@gmail.com";
+      const formattedDate = new Date(date + "T12:00:00").toLocaleDateString("pt-BR", {
+        weekday: "long", day: "2-digit", month: "long", year: "numeric"
+      });
+      const ownerSubject = `Nova visita agendada: ${propertyTitle}`;
+      const ownerHtml = `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+          <h2 style="color:#2d2d2d;font-size:22px">Nova visita agendada 📅</h2>
+          <div style="background:#f8f8f6;border-radius:12px;padding:20px;margin:20px 0">
+            <p style="margin:0 0 8px;font-size:14px"><strong>Imóvel:</strong> ${propertyTitle}${propertyCode ? ` (${propertyCode})` : ""}</p>
+            <p style="margin:0 0 8px;font-size:14px"><strong>Data:</strong> ${formattedDate}</p>
+            <p style="margin:0 0 8px;font-size:14px"><strong>Horário:</strong> ${time} (${durationLabel})</p>
+            <p style="margin:12px 0 0;font-size:14px"><strong>Visitante:</strong> ${visitorName}</p>
+            <p style="margin:0 0 8px;font-size:14px"><strong>Telefone:</strong> ${visitorPhone}</p>
+            ${visitorEmail ? `<p style="margin:0 0 8px;font-size:14px"><strong>E-mail:</strong> ${visitorEmail}</p>` : ""}
+          </div>
+          ${data.htmlLink ? `<p><a href="${data.htmlLink}">Abrir no Google Calendar</a></p>` : ""}
+        </div>
+      `;
+      const rawOwner = [
+        `To: ${OWNER_EMAIL}`,
+        `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(ownerSubject)))}?=`,
+        'Content-Type: text/html; charset="UTF-8"',
+        '',
+        ownerHtml,
+      ].join('\r\n');
+      const encodedOwner = btoa(unescape(encodeURIComponent(rawOwner)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const GOOGLE_MAIL_API_KEY = Deno.env.get("GOOGLE_MAIL_API_KEY");
+      if (GOOGLE_MAIL_API_KEY) {
+        await fetch(`https://connector-gateway.lovable.dev/google_mail/gmail/v1/users/me/messages/send`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "X-Connection-Api-Key": GOOGLE_MAIL_API_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ raw: encodedOwner }),
+        });
+      }
+    } catch (err) {
+      console.error("Owner notification failed (non-blocking):", err);
+    }
+
     return new Response(
       JSON.stringify({ success: true, eventId: data.id, eventLink: data.htmlLink }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
