@@ -39,7 +39,7 @@ export default function Contact() {
     setErrors({});
     setSending(true);
 
-    // Salva lead no banco
+    // Salva lead no banco e notifica por e-mail
     try {
       await supabase.from("contact_leads").insert({
         name: r.data.name,
@@ -48,6 +48,15 @@ export default function Contact() {
         message: r.data.message,
         source: "contact_page",
       });
+      supabase.functions.invoke("notify-lead", {
+        body: {
+          name: r.data.name,
+          phone: r.data.phone,
+          email: r.data.email || "",
+          message: r.data.message,
+          source: "contact_page",
+        },
+      }).catch(() => {});
     } catch {
       // Silencia erros de persistência — o WhatsApp segue normalmente
     }
