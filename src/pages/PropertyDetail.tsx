@@ -4,6 +4,7 @@ import Seo from "@/components/Seo";
 import { useProperty } from "@/hooks/useContent";
 import { formatPrice, wa } from "@/lib/whatsapp";
 import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
+import FinancingSimulator from "@/components/FinancingSimulator";
 import { WaLink } from "@/components/WaLink";
 
 function getEmbedUrl(url: string): string {
@@ -79,6 +80,12 @@ export default function PropertyDetail() {
                     className="w-full h-full"
                   />
                 </div>
+              </div>
+            )}
+
+            {p.price && Number(p.price) > 0 && (
+              <div className="mt-8">
+                <FinancingSimulator propertyPrice={Number(p.price)} />
               </div>
             )}
           </div>
