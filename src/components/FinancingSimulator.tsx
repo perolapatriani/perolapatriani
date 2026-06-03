@@ -35,20 +35,17 @@ export default function FinancingSimulator({ propertyPrice }: Props) {
         totalPaid: downValue + pmt * n,
       };
     } else {
-      // SAC
+      // SAC: amortização constante, juros sobre saldo devedor decrescente
       const amort = loan / n;
       const first = amort + loan * i;
       const last = amort + amort * i;
-      // soma = n*amort + i * soma(saldos), saldos = loan, loan-amort, ..., amort
-      // soma juros = i * amort * n * (n+1) / 2
-      const totalInterest = i * amort * (n + 1) * 0.5 * n / n * n; // simplified
-      const totalInterestExact = i * (amort * ((n * (n + 1)) / 2));
+      const totalInterest = i * amort * (n * (n + 1)) / 2;
       return {
         downValue,
         loan,
         firstPayment: first,
         lastPayment: last,
-        totalPaid: downValue + loan + totalInterestExact,
+        totalPaid: downValue + loan + totalInterest,
       };
     }
   }, [propertyPrice, downPct, years, rate, system]);
