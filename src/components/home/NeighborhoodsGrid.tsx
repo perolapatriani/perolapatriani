@@ -31,7 +31,7 @@ export default function NeighborhoodsGrid() {
                   src={n.image_url}
                   alt={`Bairro ${n.name}`}
                   loading="lazy"
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+                  className="absolute inset-0 h-full w-full object-cover transition-transform [transition-duration:1400ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-graphite/85 via-graphite/30 to-transparent" />

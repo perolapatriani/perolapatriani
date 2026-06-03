@@ -32,7 +32,7 @@ export default function BlogSection() {
                     src={p.cover_url}
                     alt={p.title}
                     loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+                    className="h-full w-full object-cover transition-transform [transition-duration:1400ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
                   />
                 )}
               </div>

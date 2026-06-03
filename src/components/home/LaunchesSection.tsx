@@ -20,7 +20,7 @@ export default function LaunchesSection() {
                 src={featured.cover_url ?? ""}
                 alt={featured.name}
                 loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-[2000ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105"
+                className="h-full w-full object-cover transition-transform [transition-duration:2000ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] hover:scale-105"
               />
             </div>
             <div className="hidden md:block absolute -bottom-6 -right-6 glass-strong rounded-2xl p-5 max-w-[220px] text-graphite">
