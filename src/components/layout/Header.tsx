@@ -33,7 +33,7 @@ export default function Header() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "fixed inset-x-0 top-0 z-50 transition-all duration-700 ease-[cubic-bezier(0.22_,1_,0.36_,1)]",
         scrolled || open
           ? "glass-strong shadow-soft py-3"
           : "bg-transparent py-5"
@@ -97,7 +97,7 @@ export default function Header() {
       {/* Mobile drawer */}
       <div
         className={cn(
-          "lg:hidden overflow-hidden transition-[max-height,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "lg:hidden overflow-hidden transition-[max-height,opacity] duration-700 ease-[cubic-bezier(0.22_,1_,0.36_,1)]",
           open ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
         )}
       >

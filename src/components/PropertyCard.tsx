@@ -32,7 +32,7 @@ export default function PropertyCard({ p, className }: { p: PropertyCardData; cl
             src={p.cover_url}
             alt={p.title}
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+            className="h-full w-full object-cover transition-transform duration-[1400ms] ease-[cubic-bezier(0.22_,1_,0.36_,1)] group-hover:scale-110"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-graphite/55 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
