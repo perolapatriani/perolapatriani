@@ -19,6 +19,13 @@ export interface PropertyCardData {
 }
 
 export default function PropertyCard({ p, className }: { p: PropertyCardData; className?: string }) {
+  const { add, remove, has } = useCompare();
+  const inCompare = has(p.id);
+  const toggleCompare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (inCompare) remove(p.id); else add(p);
+  };
   return (
     <Link
       to={`/imoveis/${p.slug}`}
