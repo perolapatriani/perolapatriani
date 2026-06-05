@@ -44,6 +44,18 @@ export default function PropertyCard({ p, className }: { p: PropertyCardData; cl
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-graphite/55 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <button
+          type="button"
+          onClick={toggleCompare}
+          aria-label={inCompare ? "Remover do comparador" : "Adicionar ao comparador"}
+          title={inCompare ? "No comparador" : "Comparar"}
+          className={cn(
+            "absolute top-4 right-4 z-10 h-9 w-9 rounded-full flex items-center justify-center transition-colors",
+            inCompare ? "bg-rose-burnt text-pearl" : "glass-strong text-graphite hover:bg-graphite hover:text-pearl"
+          )}
+        >
+          {inCompare ? <Check className="h-4 w-4" strokeWidth={2} /> : <GitCompareArrows className="h-4 w-4" strokeWidth={1.5} />}
+        </button>
         <div className="absolute top-4 left-4 flex gap-2">
           {p.is_new && (
             <span className="glass-strong px-3 py-1 rounded-full text-[10px] font-editorial uppercase tracking-[0.2em] text-graphite">
