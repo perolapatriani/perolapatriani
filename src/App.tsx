@@ -67,7 +67,9 @@ const App = () => (
               </Route>
               <Route path="*" element={<NotFound />} />
             </Route>
-          </Routes>
+            </Routes>
+            <CompareBarMount />
+          </CompareProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
