@@ -39,6 +39,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <CompareProvider>
           <Routes>
             <Route element={<SiteLayout />}>
               <Route path="/" element={<Index />} />
