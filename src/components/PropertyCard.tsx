@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { BedDouble, Maximize2, Car, MapPin } from "lucide-react";
+import { BedDouble, Maximize2, Car, MapPin, GitCompareArrows, Check } from "lucide-react";
 import { formatPrice } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
+import { useCompare } from "@/hooks/useCompare";
 
 export interface PropertyCardData {
   id: string;
