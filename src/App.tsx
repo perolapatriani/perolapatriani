@@ -28,6 +28,7 @@ import AdminPosts from "./pages/admin/AdminPosts";
 import AdminLeads from "./pages/admin/AdminLeads";
 import Compare from "./pages/Compare";
 import { CompareProvider } from "./hooks/useCompare";
+import CompareBar from "./components/CompareBar";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
