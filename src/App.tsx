@@ -69,7 +69,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Route>
             </Routes>
-            <CompareBarMount />
+            <CompareBar />
           </CompareProvider>
         </BrowserRouter>
       </TooltipProvider>
