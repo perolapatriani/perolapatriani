@@ -7,14 +7,28 @@ import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
 import FinancingSimulator from "@/components/FinancingSimulator";
 import { WaLink } from "@/components/WaLink";
 
-function getEmbedUrl(url: string): string {
-  // YouTube
-  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
-  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
-  // Vimeo
-  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
-  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-  return url;
+function getEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    if (host === "youtube.com" || host === "m.youtube.com") {
+      const v = u.searchParams.get("v");
+      if (v && /^[a-zA-Z0-9_-]+$/.test(v)) return `https://www.youtube.com/embed/${v}`;
+      const embedMatch = u.pathname.match(/^\/embed\/([a-zA-Z0-9_-]+)/);
+      if (embedMatch) return `https://www.youtube.com/embed/${embedMatch[1]}`;
+    }
+    if (host === "youtu.be") {
+      const id = u.pathname.slice(1);
+      if (/^[a-zA-Z0-9_-]+$/.test(id)) return `https://www.youtube.com/embed/${id}`;
+    }
+    if (host === "vimeo.com" || host === "player.vimeo.com") {
+      const m = u.pathname.match(/(\d+)/);
+      if (m) return `https://player.vimeo.com/video/${m[1]}`;
+    }
+  } catch {
+    return null;
+  }
+  return null;
 }
 
 export default function PropertyDetail() {
@@ -66,16 +80,18 @@ export default function PropertyDetail() {
               <p>{p.description}</p>
             </div>
 
-            {p.video_url && (
+            {p.video_url && getEmbedUrl(p.video_url) && (
               <div className="mt-8">
                 <p className="font-editorial text-xs uppercase tracking-[0.3em] text-rose-burnt mb-4 flex items-center gap-2">
                   <Play className="h-3 w-3" /> Tour em vídeo
                 </p>
                 <div className="aspect-video rounded-3xl overflow-hidden bg-champagne">
                   <iframe
-                    src={getEmbedUrl(p.video_url)}
+                    src={getEmbedUrl(p.video_url)!}
                     title={`Vídeo - ${p.title}`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    sandbox="allow-scripts allow-same-origin allow-presentation"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     className="w-full h-full"
                   />
