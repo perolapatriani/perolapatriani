@@ -76,14 +76,6 @@ function saveCache(c: Record<string, LatLng>) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify(c)); } catch {}
 }
 
-function geocodeOne(geocoder: any, query: string): Promise<LatLng | null> {
-  return new Promise((resolve) => {
-    geocoder.geocode({ address: query, region: "br" }, (results: any[], status: string) => {
-      if (status === "OK" && results?.[0]) {
-        const loc = results[0].geometry.location;
-        resolve({ lat: loc.lat(), lng: loc.lng() });
-      } else resolve(null);
-    });
   });
 }
 
