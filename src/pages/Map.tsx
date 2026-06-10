@@ -47,8 +47,27 @@ function loadMaps(): Promise<void> {
 const fmtPrice = (v: number | null) =>
   v ? `R$ ${Number(v).toLocaleString("pt-BR")}` : "Sob consulta";
 
-const CACHE_KEY = "perola_geocache_v1";
+const CACHE_KEY = "perola_geocache_v2";
 type LatLng = { lat: number; lng: number };
+
+// Mapping conhecido bairro → cidade (litoral SP)
+const NEIGHBORHOOD_CITY: Record<string, string> = {
+  "cibratel": "Itanhaém",
+  "cibratel ii": "Itanhaém",
+  "belas artes": "Itanhaém",
+  "centro de itanhaém": "Itanhaém",
+  "jardim imperador": "Praia Grande",
+  "praia dos sonhos": "Itanhaém",
+  "suarão": "Itanhaém",
+  "suarao": "Itanhaém",
+  "bopiranga": "Itanhaém",
+  "peruíbe centro": "Peruíbe",
+  "peruibe centro": "Peruíbe",
+  "riviera de são lourenço": "Bertioga",
+  "riviera de sao lourenco": "Bertioga",
+  "centro": "Santos",
+};
+
 function loadCache(): Record<string, LatLng> {
   try { return JSON.parse(localStorage.getItem(CACHE_KEY) || "{}"); } catch { return {}; }
 }
