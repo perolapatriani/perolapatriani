@@ -171,8 +171,15 @@ export default function MapPage() {
         const key = p.neighborhood_name.trim().toLowerCase();
         if (seen.has(key)) continue;
         seen.add(key);
-        const query = `${p.neighborhood_name}, Santos, SP, Brasil`;
-        const pos = await geocodeOne(geocoder, query);
+        const city = NEIGHBORHOOD_CITY[key];
+        const queries = city
+          ? [`${p.neighborhood_name}, ${city}, SP, Brasil`, `${p.neighborhood_name}, SP, Brasil`]
+          : [`${p.neighborhood_name}, Litoral, SP, Brasil`, `${p.neighborhood_name}, SP, Brasil`];
+        let pos: LatLng | null = null;
+        for (const q of queries) {
+          pos = await geocodeOne(geocoder, q);
+          if (pos) break;
+        }
         if (pos) {
           cache[key] = pos;
           missing.filter((mp) => (mp.neighborhood_name || "").trim().toLowerCase() === key)
