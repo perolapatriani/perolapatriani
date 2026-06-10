@@ -4,6 +4,7 @@ import Seo from "@/components/Seo";
 import { useProperties } from "@/hooks/useContent";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, Eraser, PencilRuler, Check } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
 const TRACKING_ID = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
