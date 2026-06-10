@@ -251,19 +251,33 @@ export default function MapPage() {
         <div className="flex flex-wrap gap-3 mb-4">
           <button
             onClick={startDrawing}
-            disabled={!ready || drawing}
+            disabled={!ready}
             className="inline-flex items-center gap-2 rounded-full bg-graphite px-5 py-2.5 text-xs uppercase tracking-[0.2em] text-pearl transition hover:bg-rose-burnt disabled:opacity-50"
           >
             <PencilRuler className="h-3.5 w-3.5" />
-            {drawing ? "Clique no mapa para desenhar" : hasPolygon ? "Redesenhar área" : "Desenhar área"}
+            {drawing
+              ? `Adicionando pontos (${draftCount})`
+              : hasPolygon
+              ? "Redesenhar área"
+              : "Desenhar área"}
           </button>
-          {hasPolygon && (
+          {drawing && (
+            <button
+              onClick={finishDrawing}
+              disabled={draftCount < 3}
+              className="inline-flex items-center gap-2 rounded-full bg-rose-burnt px-5 py-2.5 text-xs uppercase tracking-[0.2em] text-pearl transition hover:opacity-90 disabled:opacity-50"
+            >
+              <Check className="h-3.5 w-3.5" />
+              Concluir
+            </button>
+          )}
+          {(hasPolygon || drawing) && (
             <button
               onClick={clearPolygon}
               className="inline-flex items-center gap-2 rounded-full border border-border bg-pearl px-5 py-2.5 text-xs uppercase tracking-[0.2em] text-graphite transition hover:bg-champagne"
             >
               <Eraser className="h-3.5 w-3.5" />
-              Limpar filtro
+              {drawing ? "Cancelar" : "Limpar filtro"}
             </button>
           )}
           <div className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
@@ -271,6 +285,11 @@ export default function MapPage() {
             {visibleProps.length} de {geocoded.length} imóvel(is) {hasPolygon ? "na área" : "no mapa"}
           </div>
         </div>
+        {drawing && (
+          <p className="text-xs text-muted-foreground -mt-2 mb-4">
+            Toque no mapa para adicionar vértices (mínimo 3) e clique em <strong>Concluir</strong>.
+          </p>
+        )}
 
         {err ? (
           <div className="luxe-card p-8 text-center text-muted-foreground">
