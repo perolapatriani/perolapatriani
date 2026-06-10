@@ -47,6 +47,26 @@ function loadMaps(): Promise<void> {
 const fmtPrice = (v: number | null) =>
   v ? `R$ ${Number(v).toLocaleString("pt-BR")}` : "Sob consulta";
 
+const CACHE_KEY = "perola_geocache_v1";
+type LatLng = { lat: number; lng: number };
+function loadCache(): Record<string, LatLng> {
+  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || "{}"); } catch { return {}; }
+}
+function saveCache(c: Record<string, LatLng>) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify(c)); } catch {}
+}
+
+function geocodeOne(geocoder: any, query: string): Promise<LatLng | null> {
+  return new Promise((resolve) => {
+    geocoder.geocode({ address: query, region: "br" }, (results: any[], status: string) => {
+      if (status === "OK" && results?.[0]) {
+        const loc = results[0].geometry.location;
+        resolve({ lat: loc.lat(), lng: loc.lng() });
+      } else resolve(null);
+    });
+  });
+}
+
 export default function MapPage() {
   const { data: all = [], isLoading } = useProperties();
   const mapDivRef = useRef<HTMLDivElement | null>(null);
@@ -62,11 +82,21 @@ export default function MapPage() {
   const [draftCount, setDraftCount] = useState(0);
   const [hasPolygon, setHasPolygon] = useState(false);
   const [visibleIds, setVisibleIds] = useState<string[] | null>(null);
+  const [coords, setCoords] = useState<Record<string, LatLng>>({});
+  const [geocoding, setGeocoding] = useState(false);
 
-  const geocoded = useMemo(
-    () => all.filter((p: any) => p.latitude != null && p.longitude != null),
-    [all]
-  );
+  // Properties with effective coordinates (explicit lat/lng OR geocoded by neighborhood)
+  const located = useMemo(() => {
+    return all
+      .map((p: any) => {
+        if (p.latitude != null && p.longitude != null) {
+          return { ...p, _pos: { lat: Number(p.latitude), lng: Number(p.longitude) } };
+        }
+        const pos = coords[p.id];
+        return pos ? { ...p, _pos: pos } : null;
+      })
+      .filter(Boolean) as any[];
+  }, [all, coords]);
 
   // Init map
   useEffect(() => {
@@ -82,38 +112,80 @@ export default function MapPage() {
           streetViewControl: false,
           fullscreenControl: true,
           clickableIcons: false,
-          styles: [
-            { featureType: "poi", stylers: [{ visibility: "simplified" }] },
-          ],
+          styles: [{ featureType: "poi", stylers: [{ visibility: "simplified" }] }],
         });
         infoRef.current = new g.maps.InfoWindow();
         setReady(true);
       })
       .catch((e) => setErr(e.message));
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
-  // Build markers when data + map ready
+  // Geocode missing properties by neighborhood
+  useEffect(() => {
+    if (!ready || all.length === 0) return;
+    const g = window.google;
+    const geocoder = new g.maps.Geocoder();
+    const cache = loadCache();
+    const next: Record<string, LatLng> = {};
+    const missing: any[] = [];
+    all.forEach((p: any) => {
+      if (p.latitude != null && p.longitude != null) return;
+      const key = (p.neighborhood_name || "").trim().toLowerCase();
+      if (!key) return;
+      if (cache[key]) {
+        next[p.id] = cache[key];
+      } else {
+        missing.push(p);
+      }
+    });
+    if (Object.keys(next).length) setCoords((c) => ({ ...c, ...next }));
+    if (missing.length === 0) return;
+
+    let cancelled = false;
+    setGeocoding(true);
+    (async () => {
+      const updated: Record<string, LatLng> = {};
+      const seen = new Set<string>();
+      for (const p of missing) {
+        if (cancelled) return;
+        const key = p.neighborhood_name.trim().toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const query = `${p.neighborhood_name}, Santos, SP, Brasil`;
+        const pos = await geocodeOne(geocoder, query);
+        if (pos) {
+          cache[key] = pos;
+          missing.filter((mp) => (mp.neighborhood_name || "").trim().toLowerCase() === key)
+            .forEach((mp) => { updated[mp.id] = pos; });
+        }
+        await new Promise((r) => setTimeout(r, 120));
+      }
+      if (cancelled) return;
+      saveCache(cache);
+      setCoords((c) => ({ ...c, ...updated }));
+      setGeocoding(false);
+    })();
+    return () => { cancelled = true; };
+  }, [ready, all]);
+
+  // Build markers when located properties change
   useEffect(() => {
     if (!ready || !mapRef.current) return;
     const g = window.google;
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
-    if (geocoded.length === 0) return;
+    if (located.length === 0) return;
     const bounds = new g.maps.LatLngBounds();
-    geocoded.forEach((p: any) => {
-      const pos = { lat: Number(p.latitude), lng: Number(p.longitude) };
+    located.forEach((p: any) => {
       const marker = new g.maps.Marker({
-        position: pos,
+        position: p._pos,
         map: mapRef.current,
         title: p.title,
       });
       (marker as any).__id = p.id;
       marker.addListener("click", () => {
-        const ppm =
-          p.price && p.area_m2 ? Math.round(Number(p.price) / Number(p.area_m2)) : null;
+        const ppm = p.price && p.area_m2 ? Math.round(Number(p.price) / Number(p.area_m2)) : null;
         const html = `
           <div style="font-family: inherit; max-width: 240px;">
             ${p.cover_url ? `<img src="${p.cover_url}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px"/>` : ""}
@@ -127,14 +199,12 @@ export default function MapPage() {
         infoRef.current.open({ anchor: marker, map: mapRef.current });
       });
       markersRef.current.push(marker);
-      bounds.extend(pos);
+      bounds.extend(p._pos);
     });
-    if (!polygonRef.current) {
-      mapRef.current.fitBounds(bounds, 60);
-    }
+    if (!polygonRef.current) mapRef.current.fitBounds(bounds, 60);
     applyFilter();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, geocoded]);
+  }, [ready, located]);
 
   function applyFilter() {
     const g = window.google;
@@ -227,10 +297,12 @@ export default function MapPage() {
   };
 
   const visibleProps = useMemo(() => {
-    if (!visibleIds) return geocoded;
+    if (!visibleIds) return located;
     const set = new Set(visibleIds);
-    return geocoded.filter((p: any) => set.has(p.id));
-  }, [geocoded, visibleIds]);
+    return located.filter((p: any) => set.has(p.id));
+  }, [located, visibleIds]);
+
+  const withoutNeighborhood = all.length - located.length - (geocoding ? 0 : 0);
 
   return (
     <>
@@ -245,7 +317,7 @@ export default function MapPage() {
           Encontre por <em className="text-rose-burnt">localização</em>
         </h1>
         <p className="text-muted-foreground max-w-2xl mb-8">
-          Navegue pelos pins ou desenhe uma área no mapa para filtrar apenas os imóveis daquela região.
+          Os imóveis são posicionados automaticamente pelo bairro. Desenhe uma área no mapa para filtrar por região.
         </p>
 
         <div className="flex flex-wrap gap-3 mb-4">
@@ -255,11 +327,7 @@ export default function MapPage() {
             className="inline-flex items-center gap-2 rounded-full bg-graphite px-5 py-2.5 text-xs uppercase tracking-[0.2em] text-pearl transition hover:bg-rose-burnt disabled:opacity-50"
           >
             <PencilRuler className="h-3.5 w-3.5" />
-            {drawing
-              ? `Adicionando pontos (${draftCount})`
-              : hasPolygon
-              ? "Redesenhar área"
-              : "Desenhar área"}
+            {drawing ? `Adicionando pontos (${draftCount})` : hasPolygon ? "Redesenhar área" : "Desenhar área"}
           </button>
           {drawing && (
             <button
@@ -282,7 +350,8 @@ export default function MapPage() {
           )}
           <div className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
             <MapPin className="h-4 w-4 text-rose-burnt" />
-            {visibleProps.length} de {geocoded.length} imóvel(is) {hasPolygon ? "na área" : "no mapa"}
+            {visibleProps.length} de {located.length} imóvel(is) {hasPolygon ? "na área" : "no mapa"}
+            {geocoding && " · localizando…"}
           </div>
         </div>
         {drawing && (
@@ -312,9 +381,11 @@ export default function MapPage() {
             <aside className="space-y-3 max-h-[560px] overflow-auto pr-1">
               {isLoading ? (
                 [1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)
-              ) : geocoded.length === 0 ? (
+              ) : located.length === 0 ? (
                 <div className="luxe-card p-6 text-sm text-muted-foreground">
-                  Nenhum imóvel com coordenadas cadastradas. Adicione latitude e longitude nos imóveis pelo painel admin para vê-los no mapa.
+                  {geocoding
+                    ? "Localizando imóveis pelo bairro…"
+                    : "Nenhum imóvel com bairro cadastrado. Informe o campo Bairro nos imóveis pelo painel admin para vê-los no mapa."}
                 </div>
               ) : visibleProps.length === 0 ? (
                 <div className="luxe-card p-6 text-sm text-muted-foreground">
@@ -322,10 +393,7 @@ export default function MapPage() {
                 </div>
               ) : (
                 visibleProps.map((p: any) => {
-                  const ppm =
-                    p.price && p.area_m2
-                      ? Math.round(Number(p.price) / Number(p.area_m2))
-                      : null;
+                  const ppm = p.price && p.area_m2 ? Math.round(Number(p.price) / Number(p.area_m2)) : null;
                   return (
                     <Link
                       key={p.id}
@@ -334,23 +402,13 @@ export default function MapPage() {
                     >
                       <div className="w-20 h-20 rounded-lg overflow-hidden bg-champagne flex-shrink-0">
                         {p.cover_url && (
-                          <img
-                            src={p.cover_url}
-                            alt={p.title}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={p.cover_url} alt={p.title} className="w-full h-full object-cover" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-display text-base text-graphite truncate">
-                          {p.title}
-                        </h3>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {p.neighborhood_name}
-                        </p>
-                        <p className="text-sm text-rose-burnt font-medium mt-0.5">
-                          {fmtPrice(p.price)}
-                        </p>
+                        <h3 className="font-display text-base text-graphite truncate">{p.title}</h3>
+                        <p className="text-xs text-muted-foreground truncate">{p.neighborhood_name}</p>
+                        <p className="text-sm text-rose-burnt font-medium mt-0.5">{fmtPrice(p.price)}</p>
                         {p.area_m2 && (
                           <p className="text-[11px] text-muted-foreground">
                             {p.area_m2} m²{ppm ? ` · R$ ${ppm.toLocaleString("pt-BR")}/m²` : ""}

@@ -108,7 +108,7 @@ export default function AdminProperties() {
             <Field label="Título"><TextInput value={editing.title} onChange={(e) => onChange("title", e.target.value)} /></Field>
             <Field label="Slug (URL)" hint="Gerado automaticamente"><TextInput value={editing.slug} onChange={(e) => onChange("slug", e.target.value)} /></Field>
             <Field label="Código"><TextInput value={editing.code ?? ""} onChange={(e) => onChange("code", e.target.value)} /></Field>
-            <Field label="Bairro"><TextInput value={editing.neighborhood_name ?? ""} onChange={(e) => onChange("neighborhood_name", e.target.value)} /></Field>
+            <Field label="Bairro" hint="Usado para posicionar no mapa"><TextInput value={editing.neighborhood_name ?? ""} onChange={(e) => onChange("neighborhood_name", e.target.value)} /></Field>
             <Field label="Tipo">
               <Select value={editing.property_type} onChange={(e) => onChange("property_type", e.target.value)}>
                 <option>Apartamento</option><option>Casa</option><option>Cobertura</option>
@@ -129,12 +129,6 @@ export default function AdminProperties() {
               <Select value={editing.status} onChange={(e) => onChange("status", e.target.value)}>
                 <option value="ativo">Ativo</option><option value="vendido">Vendido</option><option value="rascunho">Rascunho</option>
               </Select>
-            </Field>
-            <Field label="Latitude" hint="Ex.: -23.9608 (para o mapa)">
-              <TextInput type="number" step="any" value={editing.latitude ?? ""} onChange={(e) => onChange("latitude", e.target.value ? Number(e.target.value) : null)} />
-            </Field>
-            <Field label="Longitude" hint="Ex.: -46.3336 (para o mapa)">
-              <TextInput type="number" step="any" value={editing.longitude ?? ""} onChange={(e) => onChange("longitude", e.target.value ? Number(e.target.value) : null)} />
             </Field>
           </div>
 
