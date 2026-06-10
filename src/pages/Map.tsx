@@ -141,11 +141,9 @@ export default function MapPage() {
     return () => { cancelled = true; };
   }, []);
 
-  // Geocode missing properties by neighborhood
+  // Geocode missing properties by neighborhood via edge function (server-side key)
   useEffect(() => {
     if (!ready || all.length === 0) return;
-    const g = window.google;
-    const geocoder = new g.maps.Geocoder();
     const cache = loadCache();
     const next: Record<string, LatLng> = {};
     const missing: any[] = [];
@@ -165,33 +163,45 @@ export default function MapPage() {
     let cancelled = false;
     setGeocoding(true);
     (async () => {
-      const updated: Record<string, LatLng> = {};
-      const seen = new Set<string>();
-      for (const p of missing) {
-        if (cancelled) return;
+      // Build unique queries (one per neighborhood)
+      const byKey: Record<string, { query: string; ids: string[] }> = {};
+      missing.forEach((p) => {
         const key = p.neighborhood_name.trim().toLowerCase();
-        if (seen.has(key)) continue;
-        seen.add(key);
         const city = NEIGHBORHOOD_CITY[key];
-        const queries = city
-          ? [`${p.neighborhood_name}, ${city}, SP, Brasil`, `${p.neighborhood_name}, SP, Brasil`]
-          : [`${p.neighborhood_name}, Litoral, SP, Brasil`, `${p.neighborhood_name}, SP, Brasil`];
-        let pos: LatLng | null = null;
-        for (const q of queries) {
-          pos = await geocodeOne(geocoder, q);
-          if (pos) break;
+        const query = city
+          ? `${p.neighborhood_name}, ${city}, SP, Brasil`
+          : `${p.neighborhood_name}, SP, Brasil`;
+        if (!byKey[key]) byKey[key] = { query, ids: [] };
+        byKey[key].ids.push(p.id);
+      });
+      const queries = Object.values(byKey).map((v) => v.query);
+
+      try {
+        const { data, error } = await supabase.functions.invoke("geocode", {
+          body: { queries },
+        });
+        if (cancelled) return;
+        if (error) {
+          console.error("geocode error", error);
+          setGeocoding(false);
+          return;
         }
-        if (pos) {
-          cache[key] = pos;
-          missing.filter((mp) => (mp.neighborhood_name || "").trim().toLowerCase() === key)
-            .forEach((mp) => { updated[mp.id] = pos; });
-        }
-        await new Promise((r) => setTimeout(r, 120));
+        const results: Record<string, LatLng | null> = data?.results ?? {};
+        const updated: Record<string, LatLng> = {};
+        Object.entries(byKey).forEach(([key, v]) => {
+          const pos = results[v.query];
+          if (pos) {
+            cache[key] = pos;
+            v.ids.forEach((id) => { updated[id] = pos; });
+          }
+        });
+        saveCache(cache);
+        setCoords((c) => ({ ...c, ...updated }));
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (!cancelled) setGeocoding(false);
       }
-      if (cancelled) return;
-      saveCache(cache);
-      setCoords((c) => ({ ...c, ...updated }));
-      setGeocoding(false);
     })();
     return () => { cancelled = true; };
   }, [ready, all]);
