@@ -39,6 +39,9 @@ export default function Hero() {
         alt="Cobertura premium à beira-mar com vista para o oceano"
         className="absolute inset-0 h-full w-full object-cover scale-105 animate-zoom-out"
         fetchPriority="high"
+        decoding="async"
+        width={1920}
+        height={1080}
       />
       {/* Scrim editorial: escurece a esquerda para dar contraste ao texto, deixa a direita arejada */}
       {/* Camadas de overlay para legibilidade editorial */}
