@@ -154,15 +154,66 @@ export default function MapPage() {
     setVisibleIds(ids);
   }
 
+  const stopDrawing = () => {
+    if (mapClickListenerRef.current) {
+      window.google.maps.event.removeListener(mapClickListenerRef.current);
+      mapClickListenerRef.current = null;
+    }
+    draftMarkersRef.current.forEach((m) => m.setMap(null));
+    draftMarkersRef.current = [];
+    setDraftCount(0);
+    setDrawing(false);
+  };
+
   const startDrawing = () => {
-    if (!drawingMgrRef.current) return;
+    if (!mapRef.current) return;
+    const g = window.google;
     if (polygonRef.current) {
       polygonRef.current.setMap(null);
       polygonRef.current = null;
       setHasPolygon(false);
     }
-    drawingMgrRef.current.setDrawingMode(window.google.maps.drawing.OverlayType.POLYGON);
+    stopDrawing();
     setDrawing(true);
+    mapClickListenerRef.current = mapRef.current.addListener("click", (e: any) => {
+      const marker = new g.maps.Marker({
+        position: e.latLng,
+        map: mapRef.current,
+        icon: {
+          path: g.maps.SymbolPath.CIRCLE,
+          scale: 5,
+          fillColor: "#b85842",
+          fillOpacity: 1,
+          strokeColor: "#fff",
+          strokeWeight: 1.5,
+        },
+        zIndex: 999,
+      });
+      draftMarkersRef.current.push(marker);
+      setDraftCount(draftMarkersRef.current.length);
+    });
+  };
+
+  const finishDrawing = () => {
+    const g = window.google;
+    if (draftMarkersRef.current.length < 3) return;
+    const path = draftMarkersRef.current.map((m) => m.getPosition());
+    const poly = new g.maps.Polygon({
+      paths: path,
+      strokeColor: "#b85842",
+      strokeWeight: 2,
+      fillColor: "#b85842",
+      fillOpacity: 0.12,
+      editable: true,
+      map: mapRef.current,
+    });
+    polygonRef.current = poly;
+    ["set_at", "insert_at", "remove_at"].forEach((evt) => {
+      g.maps.event.addListener(poly.getPath(), evt, applyFilter);
+    });
+    stopDrawing();
+    setHasPolygon(true);
+    applyFilter();
   };
 
   const clearPolygon = () => {
@@ -170,8 +221,7 @@ export default function MapPage() {
       polygonRef.current.setMap(null);
       polygonRef.current = null;
     }
-    drawingMgrRef.current?.setDrawingMode(null);
-    setDrawing(false);
+    stopDrawing();
     setHasPolygon(false);
     applyFilter();
   };
