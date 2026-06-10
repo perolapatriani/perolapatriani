@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Seo from "@/components/Seo";
 import { useProperties } from "@/hooks/useContent";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, Eraser, PencilRuler } from "lucide-react";
+import { MapPin, Eraser, PencilRuler, Check } from "lucide-react";
 
 const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
 const TRACKING_ID = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
@@ -18,7 +18,7 @@ declare global {
 let mapsPromise: Promise<void> | null = null;
 function loadMaps(): Promise<void> {
   if (typeof window === "undefined") return Promise.reject(new Error("no window"));
-  if (window.google?.maps?.drawing) return Promise.resolve();
+  if (window.google?.maps?.geometry) return Promise.resolve();
   if (mapsPromise) return mapsPromise;
   mapsPromise = new Promise<void>((resolve, reject) => {
     if (!BROWSER_KEY) {
@@ -29,7 +29,7 @@ function loadMaps(): Promise<void> {
     const s = document.createElement("script");
     const params = new URLSearchParams({
       key: BROWSER_KEY,
-      libraries: "drawing,geometry",
+      libraries: "geometry",
       loading: "async",
       callback: "__initPerolaMap",
       v: "weekly",
@@ -53,11 +53,13 @@ export default function MapPage() {
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const polygonRef = useRef<any>(null);
-  const drawingMgrRef = useRef<any>(null);
+  const draftMarkersRef = useRef<any[]>([]);
+  const mapClickListenerRef = useRef<any>(null);
   const infoRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [drawing, setDrawing] = useState(false);
+  const [draftCount, setDraftCount] = useState(0);
   const [hasPolygon, setHasPolygon] = useState(false);
   const [visibleIds, setVisibleIds] = useState<string[] | null>(null);
 
@@ -74,40 +76,17 @@ export default function MapPage() {
         if (cancelled || !mapDivRef.current) return;
         const g = window.google;
         mapRef.current = new g.maps.Map(mapDivRef.current, {
-          center: { lat: -23.964, lng: -46.328 }, // litoral SP padrão
+          center: { lat: -23.964, lng: -46.328 },
           zoom: 12,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: true,
+          clickableIcons: false,
           styles: [
             { featureType: "poi", stylers: [{ visibility: "simplified" }] },
           ],
         });
         infoRef.current = new g.maps.InfoWindow();
-        drawingMgrRef.current = new g.maps.drawing.DrawingManager({
-          drawingMode: null,
-          drawingControl: false,
-          polygonOptions: {
-            strokeColor: "#b85842",
-            strokeWeight: 2,
-            fillColor: "#b85842",
-            fillOpacity: 0.12,
-            editable: true,
-            draggable: false,
-          },
-        });
-        drawingMgrRef.current.setMap(mapRef.current);
-        g.maps.event.addListener(drawingMgrRef.current, "polygoncomplete", (poly: any) => {
-          if (polygonRef.current) polygonRef.current.setMap(null);
-          polygonRef.current = poly;
-          drawingMgrRef.current.setDrawingMode(null);
-          setDrawing(false);
-          setHasPolygon(true);
-          applyFilter();
-          ["set_at", "insert_at", "remove_at"].forEach((evt) => {
-            g.maps.event.addListener(poly.getPath(), evt, applyFilter);
-          });
-        });
         setReady(true);
       })
       .catch((e) => setErr(e.message));
