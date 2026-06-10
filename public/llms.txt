@@ -6,7 +6,7 @@
 
 - [Início](/): Visão geral da consultoria, busca de imóveis e destaques.
 - [Imóveis](/imoveis): Catálogo completo com filtros por tipo, bairro, finalidade e faixa de valor.
-- [Mapa](/mapa): Mapa interativo dos imóveis disponíveis com filtro por área.
+- [Mapa](/mapa): MAPA INTERATIVO dos imóveis disponíveis com filtro por área.
 - [Lançamentos](/lancamentos): Empreendimentos novos e pré-lançamentos exclusivos.
 - [Bairros](/bairros): Guia dos bairros atendidos no litoral paulista.
 - [Comparar](/comparar): Comparativo lado a lado entre imóveis selecionados.
