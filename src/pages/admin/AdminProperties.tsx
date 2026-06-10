@@ -130,12 +130,6 @@ export default function AdminProperties() {
                 <option value="ativo">Ativo</option><option value="vendido">Vendido</option><option value="rascunho">Rascunho</option>
               </Select>
             </Field>
-            <Field label="Latitude" hint="Ex.: -23.9608 (para o mapa)">
-              <TextInput type="number" step="any" value={editing.latitude ?? ""} onChange={(e) => onChange("latitude", e.target.value ? Number(e.target.value) : null)} />
-            </Field>
-            <Field label="Longitude" hint="Ex.: -46.3336 (para o mapa)">
-              <TextInput type="number" step="any" value={editing.longitude ?? ""} onChange={(e) => onChange("longitude", e.target.value ? Number(e.target.value) : null)} />
-            </Field>
           </div>
 
           <Field label="Descrição">
