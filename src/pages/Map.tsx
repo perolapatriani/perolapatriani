@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Seo from "@/components/Seo";
 import { useProperties } from "@/hooks/useContent";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, Eraser, PencilRuler } from "lucide-react";
+import { MapPin, Eraser, PencilRuler, Check } from "lucide-react";
 
 const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
 const TRACKING_ID = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
@@ -18,7 +18,7 @@ declare global {
 let mapsPromise: Promise<void> | null = null;
 function loadMaps(): Promise<void> {
   if (typeof window === "undefined") return Promise.reject(new Error("no window"));
-  if (window.google?.maps?.drawing) return Promise.resolve();
+  if (window.google?.maps?.geometry) return Promise.resolve();
   if (mapsPromise) return mapsPromise;
   mapsPromise = new Promise<void>((resolve, reject) => {
     if (!BROWSER_KEY) {
@@ -29,7 +29,7 @@ function loadMaps(): Promise<void> {
     const s = document.createElement("script");
     const params = new URLSearchParams({
       key: BROWSER_KEY,
-      libraries: "drawing,geometry",
+      libraries: "geometry",
       loading: "async",
       callback: "__initPerolaMap",
       v: "weekly",
@@ -53,11 +53,13 @@ export default function MapPage() {
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const polygonRef = useRef<any>(null);
-  const drawingMgrRef = useRef<any>(null);
+  const draftMarkersRef = useRef<any[]>([]);
+  const mapClickListenerRef = useRef<any>(null);
   const infoRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [drawing, setDrawing] = useState(false);
+  const [draftCount, setDraftCount] = useState(0);
   const [hasPolygon, setHasPolygon] = useState(false);
   const [visibleIds, setVisibleIds] = useState<string[] | null>(null);
 
@@ -74,40 +76,17 @@ export default function MapPage() {
         if (cancelled || !mapDivRef.current) return;
         const g = window.google;
         mapRef.current = new g.maps.Map(mapDivRef.current, {
-          center: { lat: -23.964, lng: -46.328 }, // litoral SP padrão
+          center: { lat: -23.964, lng: -46.328 },
           zoom: 12,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: true,
+          clickableIcons: false,
           styles: [
             { featureType: "poi", stylers: [{ visibility: "simplified" }] },
           ],
         });
         infoRef.current = new g.maps.InfoWindow();
-        drawingMgrRef.current = new g.maps.drawing.DrawingManager({
-          drawingMode: null,
-          drawingControl: false,
-          polygonOptions: {
-            strokeColor: "#b85842",
-            strokeWeight: 2,
-            fillColor: "#b85842",
-            fillOpacity: 0.12,
-            editable: true,
-            draggable: false,
-          },
-        });
-        drawingMgrRef.current.setMap(mapRef.current);
-        g.maps.event.addListener(drawingMgrRef.current, "polygoncomplete", (poly: any) => {
-          if (polygonRef.current) polygonRef.current.setMap(null);
-          polygonRef.current = poly;
-          drawingMgrRef.current.setDrawingMode(null);
-          setDrawing(false);
-          setHasPolygon(true);
-          applyFilter();
-          ["set_at", "insert_at", "remove_at"].forEach((evt) => {
-            g.maps.event.addListener(poly.getPath(), evt, applyFilter);
-          });
-        });
         setReady(true);
       })
       .catch((e) => setErr(e.message));
@@ -175,15 +154,66 @@ export default function MapPage() {
     setVisibleIds(ids);
   }
 
+  const stopDrawing = () => {
+    if (mapClickListenerRef.current) {
+      window.google.maps.event.removeListener(mapClickListenerRef.current);
+      mapClickListenerRef.current = null;
+    }
+    draftMarkersRef.current.forEach((m) => m.setMap(null));
+    draftMarkersRef.current = [];
+    setDraftCount(0);
+    setDrawing(false);
+  };
+
   const startDrawing = () => {
-    if (!drawingMgrRef.current) return;
+    if (!mapRef.current) return;
+    const g = window.google;
     if (polygonRef.current) {
       polygonRef.current.setMap(null);
       polygonRef.current = null;
       setHasPolygon(false);
     }
-    drawingMgrRef.current.setDrawingMode(window.google.maps.drawing.OverlayType.POLYGON);
+    stopDrawing();
     setDrawing(true);
+    mapClickListenerRef.current = mapRef.current.addListener("click", (e: any) => {
+      const marker = new g.maps.Marker({
+        position: e.latLng,
+        map: mapRef.current,
+        icon: {
+          path: g.maps.SymbolPath.CIRCLE,
+          scale: 5,
+          fillColor: "#b85842",
+          fillOpacity: 1,
+          strokeColor: "#fff",
+          strokeWeight: 1.5,
+        },
+        zIndex: 999,
+      });
+      draftMarkersRef.current.push(marker);
+      setDraftCount(draftMarkersRef.current.length);
+    });
+  };
+
+  const finishDrawing = () => {
+    const g = window.google;
+    if (draftMarkersRef.current.length < 3) return;
+    const path = draftMarkersRef.current.map((m) => m.getPosition());
+    const poly = new g.maps.Polygon({
+      paths: path,
+      strokeColor: "#b85842",
+      strokeWeight: 2,
+      fillColor: "#b85842",
+      fillOpacity: 0.12,
+      editable: true,
+      map: mapRef.current,
+    });
+    polygonRef.current = poly;
+    ["set_at", "insert_at", "remove_at"].forEach((evt) => {
+      g.maps.event.addListener(poly.getPath(), evt, applyFilter);
+    });
+    stopDrawing();
+    setHasPolygon(true);
+    applyFilter();
   };
 
   const clearPolygon = () => {
@@ -191,8 +221,7 @@ export default function MapPage() {
       polygonRef.current.setMap(null);
       polygonRef.current = null;
     }
-    drawingMgrRef.current?.setDrawingMode(null);
-    setDrawing(false);
+    stopDrawing();
     setHasPolygon(false);
     applyFilter();
   };
@@ -222,19 +251,33 @@ export default function MapPage() {
         <div className="flex flex-wrap gap-3 mb-4">
           <button
             onClick={startDrawing}
-            disabled={!ready || drawing}
+            disabled={!ready}
             className="inline-flex items-center gap-2 rounded-full bg-graphite px-5 py-2.5 text-xs uppercase tracking-[0.2em] text-pearl transition hover:bg-rose-burnt disabled:opacity-50"
           >
             <PencilRuler className="h-3.5 w-3.5" />
-            {drawing ? "Clique no mapa para desenhar" : hasPolygon ? "Redesenhar área" : "Desenhar área"}
+            {drawing
+              ? `Adicionando pontos (${draftCount})`
+              : hasPolygon
+              ? "Redesenhar área"
+              : "Desenhar área"}
           </button>
-          {hasPolygon && (
+          {drawing && (
+            <button
+              onClick={finishDrawing}
+              disabled={draftCount < 3}
+              className="inline-flex items-center gap-2 rounded-full bg-rose-burnt px-5 py-2.5 text-xs uppercase tracking-[0.2em] text-pearl transition hover:opacity-90 disabled:opacity-50"
+            >
+              <Check className="h-3.5 w-3.5" />
+              Concluir
+            </button>
+          )}
+          {(hasPolygon || drawing) && (
             <button
               onClick={clearPolygon}
               className="inline-flex items-center gap-2 rounded-full border border-border bg-pearl px-5 py-2.5 text-xs uppercase tracking-[0.2em] text-graphite transition hover:bg-champagne"
             >
               <Eraser className="h-3.5 w-3.5" />
-              Limpar filtro
+              {drawing ? "Cancelar" : "Limpar filtro"}
             </button>
           )}
           <div className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
@@ -242,6 +285,11 @@ export default function MapPage() {
             {visibleProps.length} de {geocoded.length} imóvel(is) {hasPolygon ? "na área" : "no mapa"}
           </div>
         </div>
+        {drawing && (
+          <p className="text-xs text-muted-foreground -mt-2 mb-4">
+            Toque no mapa para adicionar vértices (mínimo 3) e clique em <strong>Concluir</strong>.
+          </p>
+        )}
 
         {err ? (
           <div className="luxe-card p-8 text-center text-muted-foreground">
