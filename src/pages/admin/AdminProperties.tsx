@@ -27,6 +27,8 @@ type Property = {
   status: string;
   is_featured: boolean;
   is_new: boolean;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 const empty: Property = {
@@ -34,6 +36,7 @@ const empty: Property = {
   price: null, bedrooms: 0, suites: 0, parking: 0, area_m2: null,
   description: "", neighborhood_name: "", cover_url: null, photos: [],
   video_url: null, status: "ativo", is_featured: false, is_new: false,
+  latitude: null, longitude: null,
 };
 
 export default function AdminProperties() {
@@ -126,6 +129,12 @@ export default function AdminProperties() {
               <Select value={editing.status} onChange={(e) => onChange("status", e.target.value)}>
                 <option value="ativo">Ativo</option><option value="vendido">Vendido</option><option value="rascunho">Rascunho</option>
               </Select>
+            </Field>
+            <Field label="Latitude" hint="Ex.: -23.9608 (para o mapa)">
+              <TextInput type="number" step="any" value={editing.latitude ?? ""} onChange={(e) => onChange("latitude", e.target.value ? Number(e.target.value) : null)} />
+            </Field>
+            <Field label="Longitude" hint="Ex.: -46.3336 (para o mapa)">
+              <TextInput type="number" step="any" value={editing.longitude ?? ""} onChange={(e) => onChange("longitude", e.target.value ? Number(e.target.value) : null)} />
             </Field>
           </div>
 

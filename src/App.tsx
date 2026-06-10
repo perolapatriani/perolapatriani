@@ -27,6 +27,7 @@ import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminPosts from "./pages/admin/AdminPosts";
 import AdminLeads from "./pages/admin/AdminLeads";
 import Compare from "./pages/Compare";
+import MapPage from "./pages/Map";
 import { CompareProvider } from "./hooks/useCompare";
 import CompareBar from "./components/CompareBar";
 import NotFound from "./pages/NotFound.tsx";
@@ -55,6 +56,7 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/contato" element={<Contact />} />
               <Route path="/comparar" element={<Compare />} />
+              <Route path="/mapa" element={<MapPage />} />
               <Route path="/obrigado" element={<Thanks />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<Admin />}>

@@ -199,6 +199,8 @@ export type Database = {
           id: string
           is_featured: boolean
           is_new: boolean
+          latitude: number | null
+          longitude: number | null
           neighborhood_id: string | null
           neighborhood_name: string | null
           parking: number | null
@@ -223,6 +225,8 @@ export type Database = {
           id?: string
           is_featured?: boolean
           is_new?: boolean
+          latitude?: number | null
+          longitude?: number | null
           neighborhood_id?: string | null
           neighborhood_name?: string | null
           parking?: number | null
@@ -247,6 +251,8 @@ export type Database = {
           id?: string
           is_featured?: boolean
           is_new?: boolean
+          latitude?: number | null
+          longitude?: number | null
           neighborhood_id?: string | null
           neighborhood_name?: string | null
           parking?: number | null
