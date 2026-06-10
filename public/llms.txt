@@ -1,0 +1,15 @@
+# Pérola Patriani · Consultoria Imobiliária
+
+> Consultoria imobiliária no litoral paulista (Santos, Guarujá e região). Imóveis de alto padrão, lançamentos exclusivos e atendimento estratégico para compra, venda, locação e investimento.
+
+## Pages
+
+- [Início](/): Visão geral da consultoria, busca de imóveis e destaques.
+- [Imóveis](/imoveis): Catálogo completo com filtros por tipo, bairro, finalidade e faixa de valor.
+- [Mapa](/mapa): Mapa interativo dos imóveis disponíveis com filtro por área.
+- [Lançamentos](/lancamentos): Empreendimentos novos e pré-lançamentos exclusivos.
+- [Bairros](/bairros): Guia dos bairros atendidos no litoral paulista.
+- [Comparar](/comparar): Comparativo lado a lado entre imóveis selecionados.
+- [Sobre](/sobre): Quem é Pérola Patriani e a proposta de consultoria.
+- [Blog](/blog): Artigos sobre mercado imobiliário, investimento e estilo de vida no litoral.
+- [Contato](/contato): Formas de contato e atendimento via WhatsApp.
