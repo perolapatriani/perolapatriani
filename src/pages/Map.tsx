@@ -76,8 +76,7 @@ function saveCache(c: Record<string, LatLng>) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify(c)); } catch {}
 }
 
-  });
-}
+
 
 export default function MapPage() {
   const { data: all = [], isLoading } = useProperties();
