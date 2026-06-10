@@ -312,7 +312,7 @@ export default function MapPage() {
         path="/mapa"
       />
       <section className="container-editorial py-16">
-        <p className="eyebrow mb-4">Mapa interativo</p>
+        <p className="eyebrow mb-4">MAPA INTERATIVO</p>
         <h1 className="font-display text-5xl md:text-6xl text-graphite mb-4 text-balance">
           Encontre por <em className="text-rose-burnt">localização</em>
         </h1>
