@@ -108,7 +108,7 @@ export default function AdminProperties() {
             <Field label="Título"><TextInput value={editing.title} onChange={(e) => onChange("title", e.target.value)} /></Field>
             <Field label="Slug (URL)" hint="Gerado automaticamente"><TextInput value={editing.slug} onChange={(e) => onChange("slug", e.target.value)} /></Field>
             <Field label="Código"><TextInput value={editing.code ?? ""} onChange={(e) => onChange("code", e.target.value)} /></Field>
-            <Field label="Bairro"><TextInput value={editing.neighborhood_name ?? ""} onChange={(e) => onChange("neighborhood_name", e.target.value)} /></Field>
+            <Field label="Bairro" hint="Usado para posicionar no mapa"><TextInput value={editing.neighborhood_name ?? ""} onChange={(e) => onChange("neighborhood_name", e.target.value)} /></Field>
             <Field label="Tipo">
               <Select value={editing.property_type} onChange={(e) => onChange("property_type", e.target.value)}>
                 <option>Apartamento</option><option>Casa</option><option>Cobertura</option>
