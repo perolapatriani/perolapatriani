@@ -24,7 +24,7 @@ export default function Index() {
       <Services />
       <WhyPerola />
       <AboutSection />
-      <Testimonials />
+      {/* <Testimonials /> */}
       <BlogSection />
       <FinalCta />
     </>
