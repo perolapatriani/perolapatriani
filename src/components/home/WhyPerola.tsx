@@ -1,40 +1,28 @@
-import { useEffect, useRef, useState } from "react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { Compass, HandHeart, ShieldCheck, Sparkles } from "lucide-react";
 
-const STATS = [
-  { value: 480, suffix: "+", label: "Imóveis atendidos" },
-  { value: 320, suffix: "+", label: "Clientes assessorados" },
-  { value: 210, suffix: "+", label: "Vendas concluídas" },
-  { value: 98, suffix: "%", label: "Satisfação dos clientes" },
+const PILLARS = [
+  {
+    icon: Compass,
+    title: "Curadoria estratégica",
+    desc: "Seleção criteriosa de imóveis alinhados ao seu perfil e objetivos.",
+  },
+  {
+    icon: HandHeart,
+    title: "Atendimento humano",
+    desc: "Escuta atenta e relação próxima em cada etapa da jornada.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Transparência total",
+    desc: "Clareza em documentos, valores e decisões — sem surpresas.",
+  },
+  {
+    icon: Sparkles,
+    title: "Visão de patrimônio",
+    desc: "Análise consultiva pensando no seu investimento a longo prazo.",
+  },
 ];
-
-function CountUp({ value, suffix }: { value: number; suffix: string }) {
-  const [n, setN] = useState(0);
-  const elRef = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    const el = elRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        const start = performance.now();
-        const dur = 1800;
-        const step = (t: number) => {
-          const p = Math.min((t - start) / dur, 1);
-          const eased = 1 - Math.pow(1 - p, 3);
-          setN(Math.round(value * eased));
-          if (p < 1) requestAnimationFrame(step);
-        };
-        requestAnimationFrame(step);
-        obs.disconnect();
-      }
-    }, { threshold: 0.4 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [value]);
-
-  return <span ref={elRef}>{n}{suffix}</span>;
-}
 
 export default function WhyPerola() {
   const ref = useScrollReveal<HTMLDivElement>();
@@ -65,15 +53,14 @@ export default function WhyPerola() {
             </ul>
           </div>
 
-          <div className="lg:col-span-7 grid grid-cols-2 gap-px bg-border rounded-3xl overflow-hidden shadow-soft">
-            {STATS.map((s) => (
-              <div key={s.label} className="bg-pearl p-10 text-center">
-                <div className="font-display text-5xl md:text-6xl text-rose-burnt">
-                  <CountUp value={s.value} suffix={s.suffix} />
-                </div>
-                <p className="font-editorial text-[10px] uppercase tracking-[0.3em] text-muted-foreground mt-3">
-                  {s.label}
-                </p>
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-px bg-border rounded-3xl overflow-hidden shadow-soft">
+            {PILLARS.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="bg-pearl p-8 md:p-10 space-y-4">
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-champagne text-rose-burnt">
+                  <Icon className="h-5 w-5" strokeWidth={1.5} />
+                </span>
+                <h3 className="font-display text-2xl text-graphite">{title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
