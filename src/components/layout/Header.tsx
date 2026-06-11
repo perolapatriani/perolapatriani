@@ -41,11 +41,11 @@ export default function Header() {
       )}
     >
       <div className="container-editorial flex items-center justify-between gap-6">
-        <Link to="/" className="flex items-center gap-3.5 group" aria-label="Pérola Patriani — Início">
+        <Link to="/" className="flex items-center gap-5 group shrink-0" aria-label="Pérola Patriani — Início">
           <img
             src={logo}
             alt="Pérola Patriani Consultoria Imobiliária"
-            className="h-12 w-12 rounded-full object-cover ring-1 ring-blush/30 transition-transform duration-700 group-hover:scale-105"
+            className="h-12 w-12 shrink-0 rounded-full object-cover ring-1 ring-blush/30 transition-transform duration-700 group-hover:scale-105"
           />
           <div className="hidden sm:flex flex-col leading-[1.15]">
             <span className="font-display text-xl text-graphite tracking-wide">Pérola Patriani</span>
