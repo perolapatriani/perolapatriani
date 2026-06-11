@@ -40,7 +40,7 @@ export default function Header() {
           : "bg-transparent py-5"
       )}
     >
-      <div className="w-full px-6 md:px-10 lg:px-14 flex items-center justify-between gap-6">
+      <div className="w-full px-4 md:px-6 lg:px-8 xl:px-12 flex items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-5 group shrink-0" aria-label="Pérola Patriani — Início">
           <img
             src={logo}
