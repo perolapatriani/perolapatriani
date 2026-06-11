@@ -55,7 +55,7 @@ export default function Header() {
           </div>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-9">
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
           {NAV.map((item) => (
             <NavLink
               key={item.to}
