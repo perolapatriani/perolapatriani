@@ -14,7 +14,7 @@ export default {
       fontFamily: {
         display: ['Cormorant Garamond', 'serif'],
         body: ['Inter', 'sans-serif'],
-        editorial: ['Italiana', 'serif'],
+        editorial: ['Inter', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
