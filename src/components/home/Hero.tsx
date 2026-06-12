@@ -105,6 +105,7 @@ export default function Hero() {
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
+              aria-label="Tipo de imóvel"
               className="rounded-xl bg-pearl/70 border border-border px-4 py-3 text-sm text-graphite focus:outline-none focus:ring-2 focus:ring-rose-burnt/40 transition"
             >
               <option value="">Tipo de imóvel</option>
@@ -118,6 +119,7 @@ export default function Hero() {
             <select
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
+              aria-label="Finalidade"
               className="rounded-xl bg-pearl/70 border border-border px-4 py-3 text-sm text-graphite focus:outline-none focus:ring-2 focus:ring-rose-burnt/40 transition"
             >
               <option value="">Finalidade</option>
@@ -130,6 +132,7 @@ export default function Hero() {
             <select
               value={neighborhood}
               onChange={(e) => setNeighborhood(e.target.value)}
+              aria-label="Bairro"
               className="rounded-xl bg-pearl/70 border border-border px-4 py-3 text-sm text-graphite focus:outline-none focus:ring-2 focus:ring-rose-burnt/40 transition"
             >
               <option value="">Bairro</option>
@@ -141,6 +144,7 @@ export default function Hero() {
             <select
               value={priceRange}
               onChange={(e) => setPriceRange(e.target.value)}
+              aria-label="Faixa de valor"
               className="rounded-xl bg-pearl/70 border border-border px-4 py-3 text-sm text-graphite focus:outline-none focus:ring-2 focus:ring-rose-burnt/40 transition"
             >
               <option value="">Faixa de valor</option>

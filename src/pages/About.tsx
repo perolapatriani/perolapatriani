@@ -7,6 +7,7 @@ export default function About() {
   return (
     <>
       <Seo title="Sobre Pérola · Consultoria Imobiliária" path="/sobre" />
+      <h1 className="sr-only">Sobre Pérola Patriani · Consultoria Imobiliária no Litoral Paulista</h1>
       <AboutSection />
       <WhyPerola />
       <FinalCta />
