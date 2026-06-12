@@ -39,16 +39,19 @@ export default function Properties() {
 
         <div className="glass-strong rounded-2xl p-5 mb-10 grid gap-3 md:grid-cols-3">
           <select value={tipo} onChange={(e) => update("tipo", e.target.value)}
+            aria-label="Filtrar por tipo de imóvel"
             className="rounded-xl bg-pearl/70 border border-border px-4 py-3 text-sm">
             <option value="">Todos os tipos</option>
             <option>Apartamento</option><option>Cobertura</option><option>Casa</option>
           </select>
           <select value={bairro} onChange={(e) => update("bairro", e.target.value)}
+            aria-label="Filtrar por bairro"
             className="rounded-xl bg-pearl/70 border border-border px-4 py-3 text-sm">
             <option value="">Todos os bairros</option>
             {neighborhoods.map((n) => <option key={n.id}>{n.name}</option>)}
           </select>
           <select value={finalidade} onChange={(e) => update("finalidade", e.target.value)}
+            aria-label="Filtrar por finalidade"
             className="rounded-xl bg-pearl/70 border border-border px-4 py-3 text-sm">
             <option value="">Qualquer finalidade</option>
             <option>Compra</option><option>Locação</option><option>Investimento</option>
