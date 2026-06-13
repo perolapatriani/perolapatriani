@@ -9,6 +9,7 @@ import AboutSection from "@/components/home/AboutSection";
 import Testimonials from "@/components/home/Testimonials";
 import BlogSection from "@/components/home/BlogSection";
 import FinalCta from "@/components/home/FinalCta";
+import SellWithUs from "@/components/home/SellWithUs";
 
 export default function Index() {
   return (
@@ -23,6 +24,7 @@ export default function Index() {
       <LaunchesSection />
       <Services />
       <WhyPerola />
+      <SellWithUs />
       <AboutSection />
       {/* <Testimonials /> */}
       <BlogSection />

@@ -92,6 +92,45 @@ export type Database = {
         }
         Relationships: []
       }
+      match_leads: {
+        Row: {
+          ai_reasoning: string | null
+          answers: Json
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string
+          recommended_property_ids: string[] | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ai_reasoning?: string | null
+          answers?: Json
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone: string
+          recommended_property_ids?: string[] | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ai_reasoning?: string | null
+          answers?: Json
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string
+          recommended_property_ids?: string[] | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       neighborhoods: {
         Row: {
           created_at: string
@@ -276,6 +315,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      seller_leads: {
+        Row: {
+          address: string | null
+          bedrooms: number | null
+          created_at: string
+          desired_price: number | null
+          email: string | null
+          id: string
+          name: string
+          neighborhood: string | null
+          notes: string | null
+          phone: string
+          property_type: string | null
+          source: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          bedrooms?: number | null
+          created_at?: string
+          desired_price?: number | null
+          email?: string | null
+          id?: string
+          name: string
+          neighborhood?: string | null
+          notes?: string | null
+          phone: string
+          property_type?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          bedrooms?: number | null
+          created_at?: string
+          desired_price?: number | null
+          email?: string | null
+          id?: string
+          name?: string
+          neighborhood?: string | null
+          notes?: string | null
+          phone?: string
+          property_type?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       testimonials: {
         Row: {
