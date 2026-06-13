@@ -28,6 +28,10 @@ import AdminPosts from "./pages/admin/AdminPosts";
 import AdminLeads from "./pages/admin/AdminLeads";
 import Compare from "./pages/Compare";
 import MapPage from "./pages/Map";
+import Vender from "./pages/Vender";
+import Match from "./pages/Match";
+import AdminSellerLeads from "./pages/admin/AdminSellerLeads";
+import AdminMatchLeads from "./pages/admin/AdminMatchLeads";
 import { CompareProvider } from "./hooks/useCompare";
 import CompareBar from "./components/CompareBar";
 import NotFound from "./pages/NotFound.tsx";
@@ -57,11 +61,15 @@ const App = () => (
               <Route path="/contato" element={<Contact />} />
               <Route path="/comparar" element={<Compare />} />
               <Route path="/mapa" element={<MapPage />} />
+              <Route path="/vender" element={<Vender />} />
+              <Route path="/match" element={<Match />} />
               <Route path="/obrigado" element={<Thanks />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<Admin />}>
                 <Route index element={<AdminOverview />} />
                 <Route path="leads" element={<AdminLeads />} />
+                <Route path="captacoes" element={<AdminSellerLeads />} />
+                <Route path="match" element={<AdminMatchLeads />} />
                 <Route path="imoveis" element={<AdminProperties />} />
                 <Route path="lancamentos" element={<AdminLaunches />} />
                 <Route path="bairros" element={<AdminNeighborhoods />} />
