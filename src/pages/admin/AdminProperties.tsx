@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Star } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, Instagram } from "lucide-react";
+import InstagramCardDialog from "@/components/admin/InstagramCardDialog";
 import { Field, TextInput, TextArea, Select, PrimaryButton, GhostButton } from "@/components/admin/Field";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { slugify } from "@/lib/slug";
@@ -52,6 +53,7 @@ export default function AdminProperties() {
 
   const [editing, setEditing] = useState<Property | null>(null);
   const [saving, setSaving] = useState(false);
+  const [igCard, setIgCard] = useState<Property | null>(null);
 
   const onChange = (k: keyof Property, v: any) => setEditing((p) => p ? { ...p, [k]: v } : p);
 
@@ -202,6 +204,7 @@ export default function AdminProperties() {
                 </p>
               </div>
               <div className="flex gap-2">
+                <button onClick={() => setIgCard(p)} className="p-2 rounded-full hover:bg-champagne transition text-rose-burnt" aria-label="Card Instagram" title="Gerar card para Instagram"><Instagram className="h-4 w-4" /></button>
                 <button onClick={() => setEditing(p)} className="p-2 rounded-full hover:bg-champagne transition" aria-label="Editar"><Pencil className="h-4 w-4" /></button>
                 <button onClick={() => p.id && remove(p.id)} className="p-2 rounded-full hover:bg-destructive/10 text-destructive transition" aria-label="Excluir"><Trash2 className="h-4 w-4" /></button>
               </div>
@@ -209,6 +212,7 @@ export default function AdminProperties() {
           ))}
         </div>
       )}
+      <InstagramCardDialog property={igCard} onClose={() => setIgCard(null)} />
     </div>
   );
 }
