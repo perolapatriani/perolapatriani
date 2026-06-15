@@ -105,6 +105,24 @@ export default function AdminProperties() {
           <GhostButton onClick={() => setEditing(null)}>Cancelar</GhostButton>
         </div>
 
+        <AiPasteBox
+          onApply={(d) => setEditing((p) => p ? {
+            ...p,
+            title: d.title ?? p.title,
+            description: d.description ?? p.description,
+            property_type: d.property_type ?? p.property_type,
+            purpose: d.purpose ?? p.purpose,
+            price: d.price ?? p.price,
+            bedrooms: d.bedrooms ?? p.bedrooms,
+            suites: d.suites ?? p.suites,
+            parking: d.parking ?? p.parking,
+            area_m2: d.area_m2 ?? p.area_m2,
+            neighborhood_name: d.neighborhood_name ?? p.neighborhood_name,
+            code: d.code ?? p.code,
+            slug: p.slug || slugify(d.title ?? p.title ?? ""),
+          } : p)}
+        />
+
         <div className="luxe-card p-8 space-y-6">
           <div className="grid sm:grid-cols-2 gap-5">
             <Field label="Título"><TextInput value={editing.title} onChange={(e) => onChange("title", e.target.value)} /></Field>
