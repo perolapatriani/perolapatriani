@@ -7,7 +7,6 @@ import InstagramCardDialog from "@/components/admin/InstagramCardDialog";
 import { Field, TextInput, TextArea, Select, PrimaryButton, GhostButton } from "@/components/admin/Field";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { slugify } from "@/lib/slug";
-import { slugify } from "@/lib/slug";
 
 type Property = {
   id?: string;
