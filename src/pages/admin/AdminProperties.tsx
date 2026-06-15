@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Star, Instagram } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, Instagram, Sparkles } from "lucide-react";
 import InstagramCardDialog from "@/components/admin/InstagramCardDialog";
 import { Field, TextInput, TextArea, Select, PrimaryButton, GhostButton } from "@/components/admin/Field";
 import ImageUploader from "@/components/admin/ImageUploader";
+import { slugify } from "@/lib/slug";
 import { slugify } from "@/lib/slug";
 
 type Property = {
