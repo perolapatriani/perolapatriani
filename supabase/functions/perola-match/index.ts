@@ -118,6 +118,17 @@ Responda APENAS com JSON válido neste formato exato:
       ai_reasoning: reasoning,
     });
 
+    // Notifica por e-mail (não bloqueia resposta)
+    admin.functions.invoke("notify-lead", {
+      body: {
+        name: name.trim(),
+        phone: phone.trim(),
+        email: email?.trim() || "",
+        message: `Match IA\n\nRespostas: ${JSON.stringify(answers, null, 2)}\n\nIA: ${reasoning}`,
+        source: "match_ia",
+      },
+    }).catch((err) => console.error("notify-lead failed", err));
+
     return new Response(
       JSON.stringify({ property_ids: validIds, reasoning }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
