@@ -94,6 +94,17 @@ Deno.serve(async (req) => {
       source: "agendamento_visita",
     });
 
+    // Notifica corretora por e-mail
+    supabase.functions.invoke("notify-lead", {
+      body: {
+        name: visitorName,
+        phone: visitorPhone,
+        email: visitorEmail || "",
+        message: `Visita agendada para ${propertyTitle}\nData: ${date} às ${time} (${durationLabel})`,
+        source: "agendamento_visita",
+      },
+    }).catch((err) => console.error("notify-lead failed", err));
+
     // Send confirmation email if visitor provided email
     if (visitorEmail) {
       const formattedDate = new Date(date + "T12:00:00").toLocaleDateString("pt-BR", {
