@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Instagram } from "lucide-react";
 import { Field, TextInput, TextArea, Select, PrimaryButton, GhostButton } from "@/components/admin/Field";
+import InstagramCardDialog from "@/components/admin/InstagramCardDialog";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { slugify } from "@/lib/slug";
 
@@ -36,6 +37,7 @@ export default function AdminLaunches() {
     },
   });
   const [editing, setEditing] = useState<Launch | null>(null);
+  const [igCard, setIgCard] = useState<Launch | null>(null);
   const [highlightsText, setHighlightsText] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -141,12 +143,26 @@ export default function AdminLaunches() {
                  <h3 className="font-display text-lg text-graphite truncate">{l.name}</h3>
                  <p className="text-xs text-muted-foreground">{l.location} · Entrega {l.delivery_date} · {l.status}</p>
                </div>
+               <button onClick={() => setIgCard(l)} className="p-2 rounded-full hover:bg-champagne text-rose-burnt" title="Card Instagram"><Instagram className="h-4 w-4" /></button>
                <button onClick={() => setEditing(l)} className="p-2 rounded-full hover:bg-champagne"><Pencil className="h-4 w-4" /></button>
                <button onClick={() => l.id && remove(l.id)} className="p-2 rounded-full hover:bg-destructive/10 text-destructive"><Trash2 className="h-4 w-4" /></button>
              </div>
            ))}
          </div>
        )}
+      <InstagramCardDialog
+        property={igCard ? {
+          title: igCard.name,
+          price: null,
+          neighborhood_name: igCard.location,
+          property_type: "Lançamento",
+          purpose: "lançamento",
+          cover_url: igCard.cover_url,
+          code: null,
+        } : null}
+        onClose={() => setIgCard(null)}
+      />
     </div>
   );
 }
+
