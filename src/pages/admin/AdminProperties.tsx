@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Star, Instagram } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, Instagram, Sparkles } from "lucide-react";
 import InstagramCardDialog from "@/components/admin/InstagramCardDialog";
 import { Field, TextInput, TextArea, Select, PrimaryButton, GhostButton } from "@/components/admin/Field";
 import ImageUploader from "@/components/admin/ImageUploader";
@@ -104,6 +104,24 @@ export default function AdminProperties() {
           <h2 className="font-display text-3xl text-graphite">{editing.id ? "Editar imóvel" : "Novo imóvel"}</h2>
           <GhostButton onClick={() => setEditing(null)}>Cancelar</GhostButton>
         </div>
+
+        <AiPasteBox
+          onApply={(d) => setEditing((p) => p ? {
+            ...p,
+            title: d.title ?? p.title,
+            description: d.description ?? p.description,
+            property_type: d.property_type ?? p.property_type,
+            purpose: d.purpose ?? p.purpose,
+            price: d.price ?? p.price,
+            bedrooms: d.bedrooms ?? p.bedrooms,
+            suites: d.suites ?? p.suites,
+            parking: d.parking ?? p.parking,
+            area_m2: d.area_m2 ?? p.area_m2,
+            neighborhood_name: d.neighborhood_name ?? p.neighborhood_name,
+            code: d.code ?? p.code,
+            slug: p.slug || slugify(d.title ?? p.title ?? ""),
+          } : p)}
+        />
 
         <div className="luxe-card p-8 space-y-6">
           <div className="grid sm:grid-cols-2 gap-5">
@@ -213,6 +231,75 @@ export default function AdminProperties() {
         </div>
       )}
       <InstagramCardDialog property={igCard} onClose={() => setIgCard(null)} />
+    </div>
+  );
+}
+
+type ExtractedProperty = Partial<{
+  title: string; description: string; property_type: string; purpose: string;
+  price: number | null; bedrooms: number | null; suites: number | null;
+  parking: number | null; area_m2: number | null; neighborhood_name: string | null;
+  code: string | null;
+}>;
+
+function AiPasteBox({ onApply }: { onApply: (d: ExtractedProperty) => void }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const run = async () => {
+    if (text.trim().length < 20) { toast.error("Cole um texto mais completo do anúncio."); return; }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("extract-property", { body: { text } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (!data?.data) throw new Error("Resposta vazia da IA");
+      onApply(data.data);
+      toast.success("Campos preenchidos pela IA — revise antes de salvar.");
+      setOpen(false);
+      setText("");
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha ao processar com IA");
+    } finally { setLoading(false); }
+  };
+
+  if (!open) {
+    return (
+      <div className="luxe-card p-5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="grid place-items-center h-10 w-10 rounded-full bg-blush/40 text-rose-burnt">
+            <Sparkles className="h-4 w-4" />
+          </span>
+          <div>
+            <p className="font-display text-lg text-graphite leading-tight">Cadastro rápido com IA</p>
+            <p className="text-xs text-muted-foreground">Cole o texto bruto de outro site e a IA preenche o formulário.</p>
+          </div>
+        </div>
+        <PrimaryButton onClick={() => setOpen(true)}><Sparkles className="h-3.5 w-3.5" /> Colar anúncio</PrimaryButton>
+      </div>
+    );
+  }
+
+  return (
+    <div className="luxe-card p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-display text-xl text-graphite flex items-center gap-2"><Sparkles className="h-4 w-4 text-rose-burnt" /> Cadastro rápido com IA</h3>
+        <button onClick={() => setOpen(false)} className="text-xs uppercase tracking-[0.2em] text-muted-foreground hover:text-graphite">Fechar</button>
+      </div>
+      <p className="text-sm text-muted-foreground">Cole abaixo o texto do anúncio (descrição, ficha técnica, valores). A IA vai extrair os campos e escrever uma descrição de venda elegante.</p>
+      <TextArea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={10}
+        placeholder="Ex: Apartamento 3 dormitórios sendo 1 suíte, 2 vagas, 95m² em Cibratel II. Vista para o mar, varanda gourmet, lazer completo. R$ 850.000. Cond R$ 720..."
+      />
+      <div className="flex gap-3">
+        <PrimaryButton onClick={run} disabled={loading}>
+          <Sparkles className="h-3.5 w-3.5" /> {loading ? "Processando…" : "Processar com IA"}
+        </PrimaryButton>
+        <GhostButton onClick={() => { setText(""); }}>Limpar</GhostButton>
+      </div>
     </div>
   );
 }
