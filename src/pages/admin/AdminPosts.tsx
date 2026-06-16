@@ -110,9 +110,14 @@ export default function AdminPosts() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="font-display text-3xl text-graphite">Blog</h2>
-        <PrimaryButton onClick={() => setEditing({ ...empty })}><Plus className="h-3.5 w-3.5" /> Novo post</PrimaryButton>
+        <div className="flex gap-2">
+          <GhostButton onClick={generateWeekly} disabled={generating}>
+            <Sparkles className="h-3.5 w-3.5" /> {generating ? "Gerando…" : "Gerar post da semana (IA)"}
+          </GhostButton>
+          <PrimaryButton onClick={() => setEditing({ ...empty })}><Plus className="h-3.5 w-3.5" /> Novo post</PrimaryButton>
+        </div>
       </div>
       {isLoading ? <p>Carregando…</p> : items.length === 0 ? (
         <div className="luxe-card p-10 text-center">
