@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Sparkles, Share2 } from "lucide-react";
+import BlogCardDialog from "@/components/admin/BlogCardDialog";
 import { Field, TextInput, TextArea, PrimaryButton, GhostButton } from "@/components/admin/Field";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { slugify } from "@/lib/slug";
@@ -26,6 +27,20 @@ export default function AdminPosts() {
   });
   const [editing, setEditing] = useState<Post | null>(null);
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [cardPost, setCardPost] = useState<Post | null>(null);
+
+  const generateWeekly = async () => {
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-weekly-post");
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success("Rascunho gerado! Revise antes de publicar.");
+      qc.invalidateQueries({ queryKey: ["admin", "posts"] });
+    } catch (e: any) { toast.error(e.message || "Falha ao gerar"); }
+    finally { setGenerating(false); }
+  };
 
   useEffect(() => {
     if (editing && !editing.id && editing.title) {
@@ -95,9 +110,14 @@ export default function AdminPosts() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="font-display text-3xl text-graphite">Blog</h2>
-        <PrimaryButton onClick={() => setEditing({ ...empty })}><Plus className="h-3.5 w-3.5" /> Novo post</PrimaryButton>
+        <div className="flex gap-2">
+          <GhostButton onClick={generateWeekly} disabled={generating}>
+            <Sparkles className="h-3.5 w-3.5" /> {generating ? "Gerando…" : "Gerar post da semana (IA)"}
+          </GhostButton>
+          <PrimaryButton onClick={() => setEditing({ ...empty })}><Plus className="h-3.5 w-3.5" /> Novo post</PrimaryButton>
+        </div>
       </div>
       {isLoading ? <p>Carregando…</p> : items.length === 0 ? (
         <div className="luxe-card p-10 text-center">
@@ -115,12 +135,14 @@ export default function AdminPosts() {
                 <h3 className="font-display text-lg truncate">{p.title}</h3>
                 <p className="text-xs text-muted-foreground">{p.is_published ? "Publicado" : "Rascunho"} · {p.author}</p>
               </div>
+              <button onClick={() => setCardPost(p)} className="p-2 rounded-full hover:bg-champagne text-rose-burnt" title="Cards Instagram + TikTok"><Share2 className="h-4 w-4" /></button>
               <button onClick={() => setEditing(p)} className="p-2 rounded-full hover:bg-champagne"><Pencil className="h-4 w-4" /></button>
               <button onClick={() => p.id && remove(p.id)} className="p-2 rounded-full hover:bg-destructive/10 text-destructive"><Trash2 className="h-4 w-4" /></button>
             </div>
           ))}
         </div>
       )}
+      <BlogCardDialog post={cardPost} onClose={() => setCardPost(null)} />
     </div>
   );
 }
