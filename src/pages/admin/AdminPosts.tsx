@@ -27,6 +27,20 @@ export default function AdminPosts() {
   });
   const [editing, setEditing] = useState<Post | null>(null);
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [cardPost, setCardPost] = useState<Post | null>(null);
+
+  const generateWeekly = async () => {
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-weekly-post");
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success("Rascunho gerado! Revise antes de publicar.");
+      qc.invalidateQueries({ queryKey: ["admin", "posts"] });
+    } catch (e: any) { toast.error(e.message || "Falha ao gerar"); }
+    finally { setGenerating(false); }
+  };
 
   useEffect(() => {
     if (editing && !editing.id && editing.title) {
