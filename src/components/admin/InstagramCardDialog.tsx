@@ -125,31 +125,67 @@ export default function InstagramCardDialog({
       setReady(true);
     };
 
-    if (property.cover_url) {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => draw(img);
-      img.onerror = () => draw();
-      img.src = property.cover_url;
-    } else {
-      draw();
-    }
+    (async () => {
+      if (!property.cover_url) return draw();
+      // Fetch through blob URL — evita canvas "tainted" mesmo se o CORS do bucket variar
+      try {
+        const res = await fetch(property.cover_url, { mode: "cors", cache: "no-cache" });
+        if (!res.ok) throw new Error("img fetch");
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => { draw(img); URL.revokeObjectURL(url); };
+        img.onerror = () => { draw(); URL.revokeObjectURL(url); };
+        img.src = url;
+      } catch {
+        // fallback: tenta crossOrigin anônimo
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => draw(img);
+        img.onerror = () => draw();
+        img.src = property.cover_url;
+      }
+    })();
   }, [property]);
 
   const download = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     setBusy(true);
-    canvas.toBlob((blob) => {
-      if (!blob) { setBusy(false); return; }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `instagram-${(property?.code || property?.title || "imovel").toString().toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-      setBusy(false);
-    }, "image/png");
+    const filename = `instagram-${(property?.code || property?.title || "imovel").toString().toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`;
+    const finish = () => setBusy(false);
+    try {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url; a.download = filename;
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          return finish();
+        }
+        // fallback dataURL
+        try {
+          const dataUrl = canvas.toDataURL("image/png");
+          const a = document.createElement("a");
+          a.href = dataUrl; a.download = filename;
+          document.body.appendChild(a); a.click(); a.remove();
+        } catch {
+          alert("Não foi possível baixar (imagem com restrição de CORS). Clique com o botão direito no card e 'Salvar imagem como…'.");
+        }
+        finish();
+      }, "image/png");
+    } catch {
+      try {
+        const dataUrl = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.href = dataUrl; a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove();
+      } catch {
+        alert("Não foi possível baixar. Clique com o botão direito na imagem e salve manualmente.");
+      }
+      finish();
+    }
   };
 
   return (
