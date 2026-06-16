@@ -71,8 +71,7 @@ export default function InstagramCardDialog({
       const badgeText = (property.purpose || "venda").toUpperCase();
       ctx.font = "600 26px Inter, system-ui, sans-serif";
       const bw = ctx.measureText(badgeText).width + 44;
-      ctx.beginPath();
-      ctx.roundRect(40, 40, bw, 54, 27);
+      roundRectPath(ctx, 40, 40, bw, 54, 27);
       ctx.fill();
       ctx.fillStyle = "#3a2a26";
       ctx.fillText(badgeText, 62, 76);
