@@ -135,12 +135,14 @@ export default function AdminPosts() {
                 <h3 className="font-display text-lg truncate">{p.title}</h3>
                 <p className="text-xs text-muted-foreground">{p.is_published ? "Publicado" : "Rascunho"} · {p.author}</p>
               </div>
+              <button onClick={() => setCardPost(p)} className="p-2 rounded-full hover:bg-champagne text-rose-burnt" title="Cards Instagram + TikTok"><Share2 className="h-4 w-4" /></button>
               <button onClick={() => setEditing(p)} className="p-2 rounded-full hover:bg-champagne"><Pencil className="h-4 w-4" /></button>
               <button onClick={() => p.id && remove(p.id)} className="p-2 rounded-full hover:bg-destructive/10 text-destructive"><Trash2 className="h-4 w-4" /></button>
             </div>
           ))}
         </div>
       )}
+      <BlogCardDialog post={cardPost} onClose={() => setCardPost(null)} />
     </div>
   );
 }
