@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Download, Instagram, Loader2, Music2 } from "lucide-react";
+import SharePostButtons, { canvasToFile } from "./SharePostButtons";
 
 type Post = {
   title: string;
@@ -38,48 +39,74 @@ async function loadImage(url: string): Promise<HTMLImageElement | null> {
   } catch { return null; }
 }
 
-function wrap(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxW: number, lh: number, maxLines = 99) {
-  const words = (text || "").split(/\s+/);
+// Wrap text within maxW, returns array of lines (clamped to maxLines, with ellipsis)
+function wrapLines(ctx: CanvasRenderingContext2D, text: string, maxW: number, maxLines = 99): string[] {
+  const words = (text || "").trim().split(/\s+/).filter(Boolean);
   const lines: string[] = [];
   let line = "";
   for (const w of words) {
     const test = line ? line + " " + w : w;
     if (ctx.measureText(test).width > maxW && line) {
-      lines.push(line); line = w;
+      lines.push(line);
+      line = w;
       if (lines.length === maxLines) break;
     } else line = test;
   }
   if (line && lines.length < maxLines) lines.push(line);
+  if (lines.length === maxLines && words.length) {
+    let last = lines[maxLines - 1];
+    while (ctx.measureText(last + "…").width > maxW && last.length > 1) last = last.slice(0, -1);
+    lines[maxLines - 1] = last + "…";
+  }
+  return lines;
+}
+
+function drawLines(ctx: CanvasRenderingContext2D, lines: string[], x: number, y: number, lh: number) {
   lines.forEach((l, i) => ctx.fillText(l, x, y + i * lh));
   return lines.length * lh;
 }
 
-function brandFooter(ctx: CanvasRenderingContext2D, W: number, H: number, tag = "@perolapatriani.imoveis") {
-  ctx.fillStyle = "#3a2a26";
-  ctx.fillRect(0, H - 130, W, 130);
-  ctx.fillStyle = "#f4e2dc";
-  ctx.font = "600 36px 'Cormorant Garamond', Georgia, serif";
-  ctx.fillText("Pérola Patriani", 50, H - 75);
-  ctx.font = "400 22px Inter, sans-serif";
-  ctx.fillStyle = "#d8c2bb";
-  ctx.fillText(`Consultoria Imobiliária  ·  ${tag}`, 50, H - 38);
+function roundRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
 }
 
-function bgGradient(ctx: CanvasRenderingContext2D, W: number, H: number) {
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, "#f7e7e1");
-  g.addColorStop(1, "#e8eef5");
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-}
+// Palette — high contrast, warm editorial
+const COLOR = {
+  cream: "#F5EDE7",
+  paper: "#FBF6F2",
+  ink: "#2A1F1C",
+  rose: "#A0463A",
+  muted: "#6B5A55",
+  divider: "#D8C6BD",
+};
 
 function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement | null, x: number, y: number, w: number, h: number) {
-  ctx.fillStyle = "#d6c5be";
+  ctx.fillStyle = COLOR.divider;
   ctx.fillRect(x, y, w, h);
   if (img) {
     const r = Math.max(w / img.width, h / img.height);
     const iw = img.width * r, ih = img.height * r;
     ctx.drawImage(img, x + (w - iw) / 2, y + (h - ih) / 2, iw, ih);
   }
+}
+
+function brandFooter(ctx: CanvasRenderingContext2D, W: number, H: number) {
+  // thin top rule
+  ctx.fillStyle = COLOR.ink;
+  ctx.fillRect(0, H - 110, W, 110);
+  ctx.fillStyle = COLOR.cream;
+  ctx.font = "600 34px Georgia, 'Cormorant Garamond', serif";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillText("Pérola Patriani", 60, H - 62);
+  ctx.font = "500 20px 'Helvetica Neue', Arial, sans-serif";
+  ctx.fillStyle = "#C9B8B0";
+  ctx.fillText("Consultoria Imobiliária  ·  @perolapatriani.imoveis", 60, H - 32);
 }
 
 export default function BlogCardDialog({ post, onClose }: { post: Post | null; onClose: () => void }) {
@@ -95,97 +122,146 @@ export default function BlogCardDialog({ post, onClose }: { post: Post | null; o
   useEffect(() => {
     if (!post) return;
     setReady(false);
+    let cancelled = false;
+
     (async () => {
       const img = post.cover_url ? await loadImage(post.cover_url) : null;
+      if (cancelled) return;
 
-      // ---------- INSTAGRAM 1080x1350 ----------
+      // ============== INSTAGRAM 1080×1350 ==============
       if (igRef.current) {
         const W = 1080, H = 1350;
         const c = igRef.current; c.width = W; c.height = H;
         const ctx = c.getContext("2d")!;
-        bgGradient(ctx, W, H);
-        const photoH = Math.round(H * 0.58);
+        ctx.textBaseline = "alphabetic";
+
+        // Paper background
+        ctx.fillStyle = COLOR.paper;
+        ctx.fillRect(0, 0, W, H);
+
+        // Top photo block (clean, no overlay)
+        const photoH = 720;
         drawCover(ctx, img, 0, 0, W, photoH);
-        const grad = ctx.createLinearGradient(0, photoH - 260, 0, photoH);
-        grad.addColorStop(0, "rgba(0,0,0,0)"); grad.addColorStop(1, "rgba(0,0,0,0.6)");
-        ctx.fillStyle = grad; ctx.fillRect(0, photoH - 260, W, 260);
 
-        // badge
-        ctx.fillStyle = "rgba(255,255,255,0.92)";
-        const badge = "BLOG · INSIGHT";
-        ctx.font = "600 26px Inter, system-ui, sans-serif";
-        const bw = ctx.measureText(badge).width + 44;
-        ctx.beginPath(); ctx.roundRect(40, 40, bw, 54, 27); ctx.fill();
-        ctx.fillStyle = "#3a2a26"; ctx.fillText(badge, 62, 76);
+        // Badge over photo, top-left
+        ctx.fillStyle = COLOR.cream;
+        const badge = "BLOG  ·  INSIGHT";
+        ctx.font = "700 22px 'Helvetica Neue', Arial, sans-serif";
+        const bw = ctx.measureText(badge).width + 40;
+        roundRectPath(ctx, 40, 40, bw, 46, 23); ctx.fill();
+        ctx.fillStyle = COLOR.ink;
+        ctx.fillText(badge, 60, 70);
 
-        // title on photo
-        ctx.fillStyle = "#fff";
-        ctx.font = "600 64px 'Cormorant Garamond', Georgia, serif";
-        const titleH = wrap(ctx, post.title, 50, photoH - 200, W - 100, 70, 3);
+        // Content block on cream paper
+        const padX = 70;
+        const startY = photoH + 80;
 
-        // body area
-        ctx.fillStyle = "#3a2a26";
-        ctx.font = "400 34px Inter, system-ui, sans-serif";
-        wrap(ctx, post.excerpt || social.ig_caption?.split("\n")[0] || "", 60, photoH + 90, W - 120, 46, 6);
+        // Title (serif, dark, max 4 lines)
+        ctx.fillStyle = COLOR.ink;
+        ctx.font = "600 60px Georgia, 'Cormorant Garamond', serif";
+        const titleLines = wrapLines(ctx, post.title, W - padX * 2, 4);
+        const titleH = drawLines(ctx, titleLines, padX, startY, 68);
+
+        // Divider
+        const divY = startY + titleH + 30;
+        ctx.fillStyle = COLOR.rose;
+        ctx.fillRect(padX, divY, 80, 4);
+
+        // Excerpt (sans, muted)
+        ctx.fillStyle = COLOR.muted;
+        ctx.font = "400 28px 'Helvetica Neue', Arial, sans-serif";
+        const exLines = wrapLines(ctx, post.excerpt || "", W - padX * 2, 4);
+        drawLines(ctx, exLines, padX, divY + 50, 40);
 
         brandFooter(ctx, W, H);
       }
 
-      // ---------- TIKTOK CAROSSEL 1080x1920 (3 slides) ----------
+      // ============== TIKTOK 1080×1920 (3 slides) ==============
       const drawTikTok = (canvas: HTMLCanvasElement, kind: "hook" | "body" | "cta") => {
         const W = 1080, H = 1920;
         canvas.width = W; canvas.height = H;
         const ctx = canvas.getContext("2d")!;
-        bgGradient(ctx, W, H);
-        const photoH = Math.round(H * 0.55);
+        ctx.textBaseline = "alphabetic";
+
+        // SAFE AREA: TikTok overlays UI on the right (~120px) and bottom (~340px)
+        const SAFE_X = 80;
+        const SAFE_TOP = 200;       // status bar / top UI
+        const SAFE_BOTTOM = 420;    // caption + buttons
+        const safeRight = W - SAFE_X - 140; // avoid right action bar
+        const textW = safeRight - SAFE_X;
+
+        // Background
+        ctx.fillStyle = COLOR.paper;
+        ctx.fillRect(0, 0, W, H);
+
+        // Photo top (smaller so text below stays in safe area)
+        const photoH = 900;
         drawCover(ctx, img, 0, 0, W, photoH);
-        const ph = ctx.createLinearGradient(0, photoH - 320, 0, photoH);
-        ph.addColorStop(0, "rgba(0,0,0,0)"); ph.addColorStop(1, "rgba(0,0,0,0.7)");
-        ctx.fillStyle = ph; ctx.fillRect(0, photoH - 320, W, 320);
 
-        // top badge: slide number
-        ctx.fillStyle = "rgba(255,255,255,0.92)";
+        // Subtle bottom-fade on photo so badge contrast is fine
+        const grad = ctx.createLinearGradient(0, photoH - 200, 0, photoH);
+        grad.addColorStop(0, "rgba(42,31,28,0)");
+        grad.addColorStop(1, "rgba(42,31,28,0.55)");
+        ctx.fillStyle = grad; ctx.fillRect(0, photoH - 200, W, 200);
+
+        // Slide badge (inside safe top)
+        ctx.fillStyle = COLOR.cream;
         const n = kind === "hook" ? "1 / 3" : kind === "body" ? "2 / 3" : "3 / 3";
-        ctx.font = "600 30px Inter, system-ui, sans-serif";
-        const bw = ctx.measureText(n).width + 48;
-        ctx.beginPath(); ctx.roundRect(60, 60, bw, 60, 30); ctx.fill();
-        ctx.fillStyle = "#3a2a26"; ctx.fillText(n, 84, 102);
+        ctx.font = "700 26px 'Helvetica Neue', Arial, sans-serif";
+        const bw = ctx.measureText(n).width + 40;
+        roundRectPath(ctx, SAFE_X, SAFE_TOP, bw, 52, 26); ctx.fill();
+        ctx.fillStyle = COLOR.ink;
+        ctx.fillText(n, SAFE_X + 20, SAFE_TOP + 34);
 
-        // overline on photo
-        ctx.fillStyle = "#fff";
-        ctx.font = "500 32px Inter, sans-serif";
-        ctx.fillText("PÉROLA PATRIANI · BLOG", 60, photoH - 240);
+        // Overline on photo
+        ctx.fillStyle = COLOR.cream;
+        ctx.font = "600 26px 'Helvetica Neue', Arial, sans-serif";
+        ctx.fillText("PÉROLA PATRIANI  ·  BLOG", SAFE_X, photoH - 80);
 
-        // big text on photo (white)
-        ctx.fillStyle = "#fff";
+        // Headline on photo bottom
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "700 48px Georgia, 'Cormorant Garamond', serif";
+        const head = kind === "hook"
+          ? (social.tiktok_hook || post.title)
+          : post.title;
+        const headLines = wrapLines(ctx, head, textW, 2);
+        // place at bottom of photo
+        const headStartY = photoH - 30 - (headLines.length - 1) * 56;
+        drawLines(ctx, headLines, SAFE_X, headStartY, 56);
+
+        // ====== Body area BELOW photo, within safe-bottom margin ======
+        const bodyTop = photoH + 70;
+        const bodyBottom = H - SAFE_BOTTOM - 40; // keep clear of TikTok caption area
+        const bodyH = bodyBottom - bodyTop;
+
+        ctx.fillStyle = COLOR.ink;
+
         if (kind === "hook") {
-          ctx.font = "700 84px 'Cormorant Garamond', Georgia, serif";
-          wrap(ctx, social.tiktok_hook || post.title, 60, photoH - 160, W - 120, 92, 3);
-        } else {
-          ctx.font = "600 60px 'Cormorant Garamond', Georgia, serif";
-          wrap(ctx, post.title, 60, photoH - 100, W - 120, 66, 2);
-        }
+          ctx.font = "700 38px 'Helvetica Neue', Arial, sans-serif";
+          ctx.fillStyle = COLOR.rose;
+          ctx.fillText("Arraste para o lado →", SAFE_X, bodyTop + 20);
 
-        // body area below photo
-        const by = photoH + 100;
-        ctx.fillStyle = "#3a2a26";
-        if (kind === "hook") {
-          ctx.font = "500 42px Inter, sans-serif";
-          wrap(ctx, "Arrasta pro lado →", 60, by, W - 120, 52, 1);
-          ctx.font = "400 36px Inter, sans-serif";
-          ctx.fillStyle = "#7a3a3a";
-          wrap(ctx, post.excerpt || "", 60, by + 90, W - 120, 50, 6);
+          ctx.fillStyle = COLOR.muted;
+          ctx.font = "400 32px 'Helvetica Neue', Arial, sans-serif";
+          const lines = wrapLines(ctx, post.excerpt || "", textW, 5);
+          drawLines(ctx, lines, SAFE_X, bodyTop + 90, 44);
         } else if (kind === "body") {
-          ctx.font = "500 48px 'Cormorant Garamond', Georgia, serif";
-          ctx.fillStyle = "#7a3a3a";
-          wrap(ctx, social.tiktok_body || post.excerpt || "", 60, by, W - 120, 64, 9);
+          ctx.fillStyle = COLOR.ink;
+          ctx.font = "500 36px Georgia, 'Cormorant Garamond', serif";
+          const text = social.tiktok_body || post.excerpt || "";
+          // dynamic max lines based on safe area
+          const maxLines = Math.max(3, Math.floor((bodyH - 40) / 52));
+          const lines = wrapLines(ctx, text, textW, maxLines);
+          drawLines(ctx, lines, SAFE_X, bodyTop + 20, 52);
         } else {
-          ctx.font = "700 72px 'Cormorant Garamond', Georgia, serif";
-          ctx.fillStyle = "#7a3a3a";
-          wrap(ctx, social.tiktok_cta || "Fale com a Pérola", 60, by, W - 120, 84, 3);
-          ctx.font = "400 36px Inter, sans-serif";
-          ctx.fillStyle = "#3a2a26";
-          wrap(ctx, "Toque no link da bio · perolapatriani.com.br", 60, by + 280, W - 120, 50, 2);
+          ctx.fillStyle = COLOR.rose;
+          ctx.font = "700 56px Georgia, 'Cormorant Garamond', serif";
+          const ctaLines = wrapLines(ctx, social.tiktok_cta || "Fale com a Pérola", textW, 3);
+          drawLines(ctx, ctaLines, SAFE_X, bodyTop + 30, 70);
+
+          ctx.fillStyle = COLOR.muted;
+          ctx.font = "500 30px 'Helvetica Neue', Arial, sans-serif";
+          ctx.fillText("Link na bio  ·  perolapatriani.com.br", SAFE_X, bodyTop + 30 + ctaLines.length * 70 + 50);
         }
 
         brandFooter(ctx, W, H);
@@ -195,8 +271,10 @@ export default function BlogCardDialog({ post, onClose }: { post: Post | null; o
       if (tk2.current) drawTikTok(tk2.current, "body");
       if (tk3.current) drawTikTok(tk3.current, "cta");
 
-      setReady(true);
+      if (!cancelled) setReady(true);
     })();
+
+    return () => { cancelled = true; };
   }, [post]);
 
   const downloadCanvas = (c: HTMLCanvasElement | null, name: string) => {
@@ -233,6 +311,21 @@ export default function BlogCardDialog({ post, onClose }: { post: Post | null; o
     setBusy(false);
   };
 
+  const getFiles = async () => {
+    if (tab === "ig") {
+      const f = await canvasToFile(igRef.current, `instagram-${slug}.png`);
+      return f ? [f] : [];
+    }
+    const f1 = await canvasToFile(tk1.current, `tiktok-${slug}-1.png`);
+    const f2 = await canvasToFile(tk2.current, `tiktok-${slug}-2.png`);
+    const f3 = await canvasToFile(tk3.current, `tiktok-${slug}-3.png`);
+    return [f1, f2, f3].filter(Boolean) as File[];
+  };
+
+  const caption = tab === "ig"
+    ? (social.ig_caption || `${post?.title}\n\n${post?.excerpt || ""}\n\n#imoveis #itanhaem #baixadasantista #perolapatriani`)
+    : `${social.tiktok_hook || post?.title}\n\n${social.tiktok_body || post?.excerpt || ""}\n\n${social.tiktok_cta || ""}\n\n#imoveis #itanhaem #fyp`;
+
   return (
     <Dialog open={!!post} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-4xl">
@@ -251,18 +344,12 @@ export default function BlogCardDialog({ post, onClose }: { post: Post | null; o
           </button>
         </div>
 
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+        <div className="space-y-4 max-h-[55vh] overflow-y-auto">
           <div className={tab === "ig" ? "block" : "hidden"}>
             <div className="rounded-2xl overflow-hidden border border-border bg-champagne/30 flex items-center justify-center p-3">
-              <canvas ref={igRef} className="max-w-full max-h-[55vh] h-auto" />
+              <canvas ref={igRef} className="max-w-full max-h-[50vh] h-auto" />
             </div>
             <p className="text-xs text-muted-foreground mt-2">1080×1350 · feed Instagram</p>
-            {social.ig_caption && (
-              <div className="mt-3 rounded-lg border border-border bg-pearl p-3">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1">Legenda sugerida</p>
-                <p className="text-sm whitespace-pre-wrap">{social.ig_caption}</p>
-              </div>
-            )}
           </div>
 
           <div className={tab === "tk" ? "grid grid-cols-3 gap-3" : "hidden"}>
@@ -275,14 +362,17 @@ export default function BlogCardDialog({ post, onClose }: { post: Post | null; o
           </div>
         </div>
 
-        <button
-          onClick={downloadAll}
-          disabled={!ready || busy}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-graphite px-6 py-3 text-xs uppercase tracking-[0.22em] text-pearl disabled:opacity-50"
-        >
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-          {tab === "ig" ? "Baixar PNG do Instagram" : "Baixar 3 slides do TikTok"}
-        </button>
+        <div className="space-y-3 pt-2">
+          <button
+            onClick={downloadAll}
+            disabled={!ready || busy}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-graphite px-6 py-3 text-xs uppercase tracking-[0.22em] text-pearl disabled:opacity-50"
+          >
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            {tab === "ig" ? "Baixar PNG do Instagram" : "Baixar 3 slides do TikTok"}
+          </button>
+          <SharePostButtons caption={caption} getFiles={getFiles} />
+        </div>
       </DialogContent>
     </Dialog>
   );
