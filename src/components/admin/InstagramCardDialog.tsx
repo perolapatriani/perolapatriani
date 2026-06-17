@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Download, Instagram, Loader2 } from "lucide-react";
+import SharePostButtons, { canvasToFile } from "./SharePostButtons";
 
 type Property = {
   title: string;
@@ -19,6 +20,29 @@ type Property = {
 const BRL = (v: number | null) =>
   v == null ? "Consulte" : new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v);
 
+async function loadImage(url: string): Promise<HTMLImageElement | null> {
+  try {
+    const res = await fetch(url, { mode: "cors", cache: "no-cache" });
+    if (!res.ok) throw new Error("fetch");
+    const blob = await res.blob();
+    const u = URL.createObjectURL(blob);
+    return await new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => { resolve(img); URL.revokeObjectURL(u); };
+      img.onerror = () => { resolve(null); URL.revokeObjectURL(u); };
+      img.src = u;
+    });
+  } catch {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+  }
+}
+
 export default function InstagramCardDialog({
   property,
   onClose,
@@ -33,125 +57,115 @@ export default function InstagramCardDialog({
   useEffect(() => {
     if (!property) return;
     setReady(false);
-    const W = 1080;
-    const H = 1350;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    canvas.width = W;
-    canvas.height = H;
-    const ctx = canvas.getContext("2d")!;
+    let cancelled = false;
 
-    const draw = (img?: HTMLImageElement) => {
-      // background
+    const run = async () => {
+      // Wait up to ~500ms for the canvas to be mounted by the Radix portal
+      for (let i = 0; i < 30 && !canvasRef.current; i++) {
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+      const canvas = canvasRef.current;
+      if (!canvas || cancelled) return;
+
+      const W = 1080, H = 1350;
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext("2d")!;
+      ctx.textBaseline = "alphabetic";
+
+      const img = property.cover_url ? await loadImage(property.cover_url) : null;
+      if (cancelled) return;
+
+      // Background
       const grad = ctx.createLinearGradient(0, 0, 0, H);
-      grad.addColorStop(0, "#f7e7e1");
-      grad.addColorStop(1, "#e8eef5");
+      grad.addColorStop(0, "#FBF6F2");
+      grad.addColorStop(1, "#F1E4DC");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
 
-      // photo area (top 65%)
+      // Photo top 66%
       const photoH = Math.round(H * 0.66);
-      ctx.fillStyle = "#d6c5be";
+      ctx.fillStyle = "#D8C6BD";
       ctx.fillRect(0, 0, W, photoH);
       if (img) {
-        const ratio = Math.max(W / img.width, photoH / img.height);
-        const iw = img.width * ratio;
-        const ih = img.height * ratio;
+        const r = Math.max(W / img.width, photoH / img.height);
+        const iw = img.width * r, ih = img.height * r;
         ctx.drawImage(img, (W - iw) / 2, (photoH - ih) / 2, iw, ih);
       }
-      // dark gradient bottom of photo
-      const ph = ctx.createLinearGradient(0, photoH - 220, 0, photoH);
+      // Dark bottom gradient on photo
+      const ph = ctx.createLinearGradient(0, photoH - 240, 0, photoH);
       ph.addColorStop(0, "rgba(0,0,0,0)");
-      ph.addColorStop(1, "rgba(0,0,0,0.55)");
+      ph.addColorStop(1, "rgba(0,0,0,0.62)");
       ctx.fillStyle = ph;
-      ctx.fillRect(0, photoH - 220, W, 220);
+      ctx.fillRect(0, photoH - 240, W, 240);
 
-      // badge top-left
-      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      // Badge top-left
+      ctx.fillStyle = "#F5EDE7";
       const badgeText = (property.purpose || "venda").toUpperCase();
-      ctx.font = "600 26px Inter, system-ui, sans-serif";
+      ctx.font = "700 24px 'Helvetica Neue', Arial, sans-serif";
       const bw = ctx.measureText(badgeText).width + 44;
-      roundRectPath(ctx, 40, 40, bw, 54, 27);
+      roundRectPath(ctx, 40, 40, bw, 50, 25);
       ctx.fill();
-      ctx.fillStyle = "#3a2a26";
-      ctx.fillText(badgeText, 62, 76);
+      ctx.fillStyle = "#2A1F1C";
+      ctx.fillText(badgeText, 62, 72);
 
-      // neighborhood on photo
+      // Neighborhood
       if (property.neighborhood_name) {
         ctx.fillStyle = "rgba(255,255,255,0.95)";
-        ctx.font = "500 30px Inter, system-ui, sans-serif";
-        ctx.fillText(property.neighborhood_name.toUpperCase(), 50, photoH - 110);
+        ctx.font = "600 28px 'Helvetica Neue', Arial, sans-serif";
+        ctx.fillText(property.neighborhood_name.toUpperCase(), 50, photoH - 120);
       }
-      // title on photo
-      ctx.fillStyle = "#fff";
-      ctx.font = "600 52px 'Cormorant Garamond', Georgia, serif";
-      wrapText(ctx, property.title, 50, photoH - 50, W - 100, 56, 2);
+      // Title on photo
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "600 56px Georgia, 'Cormorant Garamond', serif";
+      wrapText(ctx, property.title, 50, photoH - 50, W - 100, 60, 2);
 
-      // bottom content area
+      // Bottom area
       const by = photoH + 50;
-      // price
-      ctx.fillStyle = "#7a3a3a";
-      ctx.font = "700 72px 'Cormorant Garamond', Georgia, serif";
-      ctx.fillText(BRL(property.price), 50, by + 60);
+      ctx.fillStyle = "#A0463A";
+      ctx.font = "700 76px Georgia, 'Cormorant Garamond', serif";
+      ctx.fillText(BRL(property.price), 50, by + 70);
 
-      // specs row
       const specs: string[] = [];
       if (property.bedrooms) specs.push(`${property.bedrooms} dorm.`);
       if (property.suites) specs.push(`${property.suites} suíte${property.suites > 1 ? "s" : ""}`);
       if (property.parking) specs.push(`${property.parking} vaga${property.parking > 1 ? "s" : ""}`);
       if (property.area_m2) specs.push(`${property.area_m2} m²`);
-      ctx.fillStyle = "#3a2a26";
-      ctx.font = "500 32px Inter, system-ui, sans-serif";
+      ctx.fillStyle = "#2A1F1C";
+      ctx.font = "500 30px 'Helvetica Neue', Arial, sans-serif";
       ctx.fillText(specs.join("  ·  "), 50, by + 130);
 
-      // brand footer
-      ctx.fillStyle = "#3a2a26";
-      ctx.fillRect(0, H - 130, W, 130);
-      ctx.fillStyle = "#f4e2dc";
-      ctx.font = "600 36px 'Cormorant Garamond', Georgia, serif";
-      ctx.fillText("Pérola Patriani", 50, H - 75);
-      ctx.font = "400 22px Inter, sans-serif";
-      ctx.fillStyle = "#d8c2bb";
-      ctx.fillText("Consultoria Imobiliária  ·  @perolapatriani.imoveis", 50, H - 38);
+      // Footer
+      ctx.fillStyle = "#2A1F1C";
+      ctx.fillRect(0, H - 120, W, 120);
+      ctx.fillStyle = "#F5EDE7";
+      ctx.font = "600 34px Georgia, 'Cormorant Garamond', serif";
+      ctx.fillText("Pérola Patriani", 50, H - 68);
+      ctx.font = "500 20px 'Helvetica Neue', Arial, sans-serif";
+      ctx.fillStyle = "#C9B8B0";
+      ctx.fillText("Consultoria Imobiliária  ·  @perolapatriani.imoveis", 50, H - 34);
       if (property.code) {
         ctx.textAlign = "right";
-        ctx.font = "500 24px Inter, sans-serif";
-        ctx.fillStyle = "#f4e2dc";
-        ctx.fillText(`Cód. ${property.code}`, W - 50, H - 55);
+        ctx.font = "600 22px 'Helvetica Neue', Arial, sans-serif";
+        ctx.fillStyle = "#F5EDE7";
+        ctx.fillText(`Cód. ${property.code}`, W - 50, H - 50);
         ctx.textAlign = "left";
       }
 
       setReady(true);
     };
 
-    (async () => {
-      if (!property.cover_url) return draw();
-      // Fetch through blob URL — evita canvas "tainted" mesmo se o CORS do bucket variar
-      try {
-        const res = await fetch(property.cover_url, { mode: "cors", cache: "no-cache" });
-        if (!res.ok) throw new Error("img fetch");
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const img = new Image();
-        img.onload = () => { draw(img); URL.revokeObjectURL(url); };
-        img.onerror = () => { draw(); URL.revokeObjectURL(url); };
-        img.src = url;
-      } catch {
-        // fallback: tenta crossOrigin anônimo
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => draw(img);
-        img.onerror = () => draw();
-        img.src = property.cover_url;
-      }
-    })();
+    run();
+    return () => { cancelled = true; };
   }, [property]);
+
+  const slug = (property?.code || property?.title || "imovel").toString().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const filename = `instagram-${slug}.png`;
 
   const download = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     setBusy(true);
-    const filename = `instagram-${(property?.code || property?.title || "imovel").toString().toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`;
     const finish = () => setBusy(false);
     try {
       canvas.toBlob((blob) => {
@@ -163,28 +177,28 @@ export default function InstagramCardDialog({
           setTimeout(() => URL.revokeObjectURL(url), 1000);
           return finish();
         }
-        // fallback dataURL
         try {
           const dataUrl = canvas.toDataURL("image/png");
           const a = document.createElement("a");
           a.href = dataUrl; a.download = filename;
           document.body.appendChild(a); a.click(); a.remove();
         } catch {
-          alert("Não foi possível baixar (imagem com restrição de CORS). Clique com o botão direito no card e 'Salvar imagem como…'.");
+          alert("Não foi possível baixar.");
         }
         finish();
       }, "image/png");
     } catch {
-      try {
-        const dataUrl = canvas.toDataURL("image/png");
-        const a = document.createElement("a");
-        a.href = dataUrl; a.download = filename;
-        document.body.appendChild(a); a.click(); a.remove();
-      } catch {
-        alert("Não foi possível baixar. Clique com o botão direito na imagem e salve manualmente.");
-      }
       finish();
     }
+  };
+
+  const caption = property
+    ? `${property.title}\n${property.neighborhood_name || ""}\n${BRL(property.price)}\n\nFale com a Pérola — link na bio\n\n#imoveis #${(property.neighborhood_name || "itanhaem").toLowerCase().replace(/\s+/g, "")} #baixadasantista #perolapatriani${property.code ? ` #cod${property.code}` : ""}`
+    : "";
+
+  const getFiles = async () => {
+    const f = await canvasToFile(canvasRef.current, filename);
+    return f ? [f] : [];
   };
 
   return (
@@ -196,12 +210,15 @@ export default function InstagramCardDialog({
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="rounded-2xl overflow-hidden border border-border bg-champagne/30 max-h-[60vh] flex items-center justify-center">
-            <canvas ref={canvasRef} className="max-w-full max-h-[60vh] h-auto" />
+          <div className="rounded-2xl overflow-hidden border border-border bg-champagne/30 max-h-[55vh] flex items-center justify-center">
+            <canvas ref={canvasRef} className="max-w-full max-h-[55vh] h-auto" />
+            {!ready && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            )}
           </div>
-          <p className="text-xs text-muted-foreground">
-            Formato 1080×1350 (feed Instagram). Baixe e poste — pronto pra colar legenda e hashtags.
-          </p>
+          <p className="text-xs text-muted-foreground">1080×1350 · feed Instagram</p>
           <button
             onClick={download}
             disabled={!ready || busy}
@@ -210,6 +227,7 @@ export default function InstagramCardDialog({
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
             Baixar PNG
           </button>
+          <SharePostButtons caption={caption} getFiles={getFiles} />
         </div>
       </DialogContent>
     </Dialog>
@@ -225,7 +243,7 @@ function wrapText(
   lineHeight: number,
   maxLines: number,
 ) {
-  const words = text.split(" ");
+  const words = (text || "").split(" ");
   const lines: string[] = [];
   let line = "";
   for (const w of words) {
@@ -240,13 +258,11 @@ function wrapText(
   }
   if (line && lines.length < maxLines) lines.push(line);
   if (lines.length === maxLines) {
-    // ellipsis last
     while (lines[maxLines - 1] && ctx.measureText(lines[maxLines - 1] + "…").width > maxWidth) {
       lines[maxLines - 1] = lines[maxLines - 1].slice(0, -1);
     }
     if (words.join(" ").length > lines.join(" ").length) lines[maxLines - 1] += "…";
   }
-  // draw bottom-up from y
   const startY = y - (lines.length - 1) * lineHeight;
   lines.forEach((l, i) => ctx.fillText(l, x, startY + i * lineHeight));
 }
