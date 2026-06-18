@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 import { ArrowRight, Sparkles, MessageCircle, Loader2 } from "lucide-react";
@@ -6,7 +6,7 @@ import Seo from "@/components/Seo";
 import { supabase } from "@/integrations/supabase/client";
 import { useProperties, useNeighborhoods } from "@/hooks/useContent";
 import PropertyCard from "@/components/PropertyCard";
-import { wa, whatsappLink, trackWaClick } from "@/lib/whatsapp";
+import { whatsappLink, trackWaClick } from "@/lib/whatsapp";
 import { toast } from "@/hooks/use-toast";
 
 type Answers = {
@@ -29,6 +29,96 @@ const contactSchema = z.object({
   email: z.string().trim().email().max(255).optional().or(z.literal("")),
 });
 
+// Faixas de orçamento (min, max)
+const BUDGET_RANGES: Record<string, [number, number]> = {
+  "Até R$ 500 mil": [0, 500_000],
+  "R$ 500 mil a 1M": [500_000, 1_000_000],
+  "R$ 1M a 2M": [1_000_000, 2_000_000],
+  "Acima de R$ 2M": [2_000_000, Infinity],
+};
+
+const TYPE_MAP: Record<string, string[]> = {
+  "Apartamento": ["apartamento", "apto", "flat"],
+  "Cobertura": ["cobertura"],
+  "Casa": ["casa", "sobrado"],
+};
+
+function normalize(s: string) {
+  return (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+/**
+ * Match por EXCLUSÃO: cada imóvel começa com pontuação cheia.
+ * Critérios incompatíveis derrubam o score; pequenos desencontros apenas penalizam.
+ */
+function rankByExclusion(properties: any[], a: Answers) {
+  const wantedBedrooms = a.bedrooms === "4 ou mais" ? 4 : parseInt(a.bedrooms || "0", 10);
+  const [minBudget, maxBudget] = BUDGET_RANGES[a.budget] ?? [0, Infinity];
+  const wantedTypes = a.type && a.type !== "Indiferente" ? TYPE_MAP[a.type] ?? [] : [];
+  const wantedNeighborhood = normalize(a.neighborhood);
+
+  const scored = properties.map((p) => {
+    let score = 100;
+    let eliminated = false;
+
+    // Tipo: se escolheu específico e não bate, elimina
+    if (wantedTypes.length > 0) {
+      const pType = normalize(p.property_type || "");
+      const ok = wantedTypes.some((t) => pType.includes(t));
+      if (!ok) eliminated = true;
+    }
+
+    // Dormitórios: tolerância de ±1; fora disso elimina
+    if (wantedBedrooms > 0 && p.bedrooms != null) {
+      const diff = Math.abs(p.bedrooms - wantedBedrooms);
+      if (wantedBedrooms >= 4) {
+        if (p.bedrooms < 4) eliminated = true;
+      } else if (diff > 1) {
+        eliminated = true;
+      } else {
+        score -= diff * 15;
+      }
+    }
+
+    // Orçamento: fora da faixa elimina (com tolerância 15% acima)
+    if (p.price != null) {
+      const tolerance = maxBudget * 1.15;
+      if (p.price < minBudget * 0.85 || p.price > tolerance) eliminated = true;
+      else {
+        // mais barato dentro da faixa pontua melhor
+        const mid = (minBudget + Math.min(maxBudget, p.price * 1.2)) / 2;
+        score -= Math.min(20, Math.abs(p.price - mid) / 100_000);
+      }
+    }
+
+    // Bairro: preferência, apenas pontua
+    if (wantedNeighborhood) {
+      const pN = normalize(p.neighborhood_name || "");
+      if (pN && pN.includes(wantedNeighborhood)) score += 25;
+    }
+
+    return { p, score, eliminated };
+  });
+
+  const survivors = scored.filter((s) => !s.eliminated);
+  // se sobrar menos de 3, completa com os menos penalizados eliminados
+  const fallback = scored.filter((s) => s.eliminated).sort((a, b) => b.score - a.score);
+  const pool = survivors.sort((a, b) => b.score - a.score);
+  while (pool.length < 3 && fallback.length) pool.push(fallback.shift()!);
+  return pool.slice(0, 3).map((s) => s.p);
+}
+
+function buildReasoning(a: Answers) {
+  const parts: string[] = [];
+  if (a.who) parts.push(`para ${a.who.toLowerCase()}`);
+  if (a.type && a.type !== "Indiferente") parts.push(`em ${a.type.toLowerCase()}`);
+  if (a.bedrooms) parts.push(`${a.bedrooms} dorm.`);
+  if (a.budget) parts.push(`faixa ${a.budget.toLowerCase()}`);
+  if (a.vibe) parts.push(`vibe ${a.vibe.toLowerCase()}`);
+  if (a.neighborhood) parts.push(`com preferência por ${a.neighborhood}`);
+  return `Selecionei o que mais combina com o seu perfil — ${parts.join(", ")}. Vamos refinar juntos no atendimento.`;
+}
+
 export default function Match() {
   const { data: allProps = [] } = useProperties();
   const { data: neighborhoods = [] } = useNeighborhoods();
@@ -39,7 +129,7 @@ export default function Match() {
   const [result, setResult] = useState<{ propertyIds: string[]; reasoning: string } | null>(null);
 
   const current = STEPS[step];
-  const isContactStep = step === STEPS.length; // bairro vai inline no contato
+  const isContactStep = step === STEPS.length;
   const total = STEPS.length + 1;
 
   const pick = (value: string) => {
@@ -64,11 +154,23 @@ export default function Match() {
     }
     setLoading(true);
     try {
-      const { data: res, error } = await supabase.functions.invoke("perola-match", {
-        body: { ...parsed.data, answers: { ...answers, neighborhood } },
+      const fullAnswers = { ...answers, neighborhood } as Answers;
+      // Match local por exclusão (sem IA, sem custo)
+      const matched = rankByExclusion(allProps as any[], fullAnswers);
+      const reasoning = buildReasoning(fullAnswers);
+
+      // Salva o lead direto na tabela
+      const { error } = await supabase.from("match_leads").insert({
+        name: parsed.data.name,
+        phone: parsed.data.phone,
+        email: parsed.data.email || null,
+        answers: fullAnswers as any,
+        recommended_property_ids: matched.map((p: any) => p.id),
+        ai_reasoning: reasoning,
       });
-      if (error) throw error;
-      setResult({ propertyIds: res.property_ids ?? [], reasoning: res.reasoning ?? "" });
+      if (error) console.warn("lead save", error);
+
+      setResult({ propertyIds: matched.map((p: any) => p.id), reasoning });
       setAskContact(false);
     } catch (err) {
       console.error(err);
@@ -78,25 +180,27 @@ export default function Match() {
     }
   };
 
-  const recommended = result ? result.propertyIds.map((id) => allProps.find((p: any) => p.id === id)).filter(Boolean) : [];
+  const recommended = useMemo(
+    () => result ? result.propertyIds.map((id) => allProps.find((p: any) => p.id === id)).filter(Boolean) : [],
+    [result, allProps]
+  );
 
   return (
     <>
       <Seo
-        title="Match de Perfil · Pérola IA"
+        title="Match de Perfil · Pérola"
         description="Descubra em 1 minuto os 3 imóveis do litoral paulista que mais combinam com o seu perfil."
         path="/match"
       />
       <section className="container-editorial py-16 max-w-4xl">
-        <p className="eyebrow mb-4 inline-flex items-center gap-2"><Sparkles className="h-3 w-3" /> Pérola IA</p>
+        <p className="eyebrow mb-4 inline-flex items-center gap-2"><Sparkles className="h-3 w-3" /> Match Pérola</p>
         <h1 className="font-display text-5xl md:text-6xl text-graphite mb-4 text-balance">
           Match de <em className="text-rose-burnt">perfil</em>
         </h1>
         <p className="text-muted-foreground max-w-2xl mb-10">
-          Responda 6 perguntas rápidas e a Pérola IA escolhe 3 imóveis do catálogo que combinam com você.
+          Responda 6 perguntas rápidas e a Pérola seleciona 3 imóveis do catálogo que combinam com você.
         </p>
 
-        {/* Progress */}
         {!result && (
           <div className="mb-10">
             <div className="h-1 bg-border rounded-full overflow-hidden">
@@ -108,7 +212,6 @@ export default function Match() {
           </div>
         )}
 
-        {/* Quiz */}
         {!askContact && !result && !isContactStep && (
           <div className="glass-strong rounded-3xl p-8 md:p-12">
             <h2 className="font-display text-3xl md:text-4xl text-graphite mb-8">{current.question}</h2>
@@ -131,11 +234,10 @@ export default function Match() {
           </div>
         )}
 
-        {/* Contact form */}
         {askContact && !result && (
           <form onSubmit={submit} className="glass-strong rounded-3xl p-8 md:p-12 space-y-5">
             <h2 className="font-display text-3xl md:text-4xl text-graphite">Quase lá — para onde envio o resultado?</h2>
-            <p className="text-sm text-muted-foreground">Vou usar seus dados para te enviar os 3 imóveis selecionados pela IA + iniciar um atendimento personalizado.</p>
+            <p className="text-sm text-muted-foreground">Vou usar seus dados para te enviar os 3 imóveis selecionados + iniciar um atendimento personalizado.</p>
 
             <div className="grid sm:grid-cols-2 gap-4">
               <input name="name" required maxLength={100} placeholder="Nome" className={inputCls} />
@@ -156,11 +258,10 @@ export default function Match() {
           </form>
         )}
 
-        {/* Result */}
         {result && (
           <div className="space-y-10">
             <div className="glass-strong rounded-3xl p-8 md:p-12">
-              <p className="eyebrow mb-3 inline-flex items-center gap-2"><Sparkles className="h-3 w-3" /> Análise Pérola IA</p>
+              <p className="eyebrow mb-3 inline-flex items-center gap-2"><Sparkles className="h-3 w-3" /> Seleção Pérola</p>
               <p className="font-display text-2xl md:text-3xl text-graphite italic leading-relaxed">"{result.reasoning}"</p>
             </div>
 
