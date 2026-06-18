@@ -43,8 +43,6 @@ export async function requireAdmin(
     });
   }
 
-  // Allow internal callers using the service role key (e.g. pg_cron job).
-  if (opts.allowServiceRole && token === SERVICE_KEY) return null;
 
   const supabase = createClient(SUPABASE_URL, ANON_KEY, {
     global: { headers: { Authorization: `Bearer ${token}` } },

@@ -33,8 +33,8 @@ function slugify(s: string) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-  // Admin via session, or pg_cron via service-role bearer.
-  const denied = await requireAdmin(req, { allowServiceRole: true });
+  // Admin via session, or pg_cron via X-Cron-Secret.
+  const denied = await requireAdmin(req, { cronSecretKey: "weekly_post_cron" });
   if (denied) return denied;
 
   try {
