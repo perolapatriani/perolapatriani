@@ -112,15 +112,15 @@ Deno.serve(async (req) => {
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
           <h2 style="color:#2d2d2d;font-size:22px">Sua visita foi agendada! ✅</h2>
           <p style="color:#555;font-size:14px;line-height:1.6">
-            Olá <strong>${visitorName}</strong>, sua visita ao imóvel foi confirmada na agenda.
+            Olá <strong>${esc(visitorName)}</strong>, sua visita ao imóvel foi confirmada na agenda.
           </p>
           <div style="background:#f8f8f6;border-radius:12px;padding:20px;margin:20px 0">
-            <p style="margin:0 0 8px;color:#2d2d2d;font-size:14px"><strong>🏠 Imóvel:</strong> ${propertyTitle}</p>
-            <p style="margin:0 0 8px;color:#2d2d2d;font-size:14px"><strong>📅 Data:</strong> ${formattedDate}</p>
-            <p style="margin:0 0 8px;color:#2d2d2d;font-size:14px"><strong>🕐 Horário:</strong> ${time}</p>
-            <p style="margin:0;color:#2d2d2d;font-size:14px"><strong>⏱ Duração:</strong> ${durationLabel}</p>
+            <p style="margin:0 0 8px;color:#2d2d2d;font-size:14px"><strong>🏠 Imóvel:</strong> ${esc(propertyTitle)}</p>
+            <p style="margin:0 0 8px;color:#2d2d2d;font-size:14px"><strong>📅 Data:</strong> ${esc(formattedDate)}</p>
+            <p style="margin:0 0 8px;color:#2d2d2d;font-size:14px"><strong>🕐 Horário:</strong> ${esc(time)}</p>
+            <p style="margin:0;color:#2d2d2d;font-size:14px"><strong>⏱ Duração:</strong> ${esc(durationLabel)}</p>
           </div>
-          ${data.htmlLink ? `<p style="margin:20px 0"><a href="${data.htmlLink}" style="background:#2d2d2d;color:#fff;text-decoration:none;padding:12px 24px;border-radius:30px;font-size:13px;display:inline-block">Ver no Google Calendar</a></p>` : ""}
+          ${data.htmlLink ? `<p style="margin:20px 0"><a href="${esc(data.htmlLink)}" style="background:#2d2d2d;color:#fff;text-decoration:none;padding:12px 24px;border-radius:30px;font-size:13px;display:inline-block">Ver no Google Calendar</a></p>` : ""}
           <p style="color:#555;font-size:14px;line-height:1.6">
             Entraremos em contato para confirmar os detalhes. Caso precise reagendar, entre em contato pelo WhatsApp.
           </p>
