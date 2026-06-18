@@ -171,14 +171,14 @@ Deno.serve(async (req) => {
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
           <h2 style="color:#2d2d2d;font-size:22px">Nova visita agendada 📅</h2>
           <div style="background:#f8f8f6;border-radius:12px;padding:20px;margin:20px 0">
-            <p style="margin:0 0 8px;font-size:14px"><strong>Imóvel:</strong> ${propertyTitle}${propertyCode ? ` (${propertyCode})` : ""}</p>
-            <p style="margin:0 0 8px;font-size:14px"><strong>Data:</strong> ${formattedDate}</p>
-            <p style="margin:0 0 8px;font-size:14px"><strong>Horário:</strong> ${time} (${durationLabel})</p>
-            <p style="margin:12px 0 0;font-size:14px"><strong>Visitante:</strong> ${visitorName}</p>
-            <p style="margin:0 0 8px;font-size:14px"><strong>Telefone:</strong> ${visitorPhone}</p>
-            ${visitorEmail ? `<p style="margin:0 0 8px;font-size:14px"><strong>E-mail:</strong> ${visitorEmail}</p>` : ""}
+            <p style="margin:0 0 8px;font-size:14px"><strong>Imóvel:</strong> ${esc(propertyTitle)}${propertyCode ? ` (${esc(propertyCode)})` : ""}</p>
+            <p style="margin:0 0 8px;font-size:14px"><strong>Data:</strong> ${esc(formattedDate)}</p>
+            <p style="margin:0 0 8px;font-size:14px"><strong>Horário:</strong> ${esc(time)} (${esc(durationLabel)})</p>
+            <p style="margin:12px 0 0;font-size:14px"><strong>Visitante:</strong> ${esc(visitorName)}</p>
+            <p style="margin:0 0 8px;font-size:14px"><strong>Telefone:</strong> ${esc(visitorPhone)}</p>
+            ${visitorEmail ? `<p style="margin:0 0 8px;font-size:14px"><strong>E-mail:</strong> ${esc(visitorEmail)}</p>` : ""}
           </div>
-          ${data.htmlLink ? `<p><a href="${data.htmlLink}">Abrir no Google Calendar</a></p>` : ""}
+          ${data.htmlLink ? `<p><a href="${esc(data.htmlLink)}">Abrir no Google Calendar</a></p>` : ""}
         </div>
       `;
       const rawOwner = [
