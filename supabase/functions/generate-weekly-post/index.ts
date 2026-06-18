@@ -2,11 +2,7 @@
 // Temas: mercado de alto padrão na Baixada Santista (Itanhaém, Peruíbe, Mongaguá, Praia Grande, Santos, Guarujá),
 // lifestyle/bairros, dicas de compra/venda/investimento e lançamentos do portfólio.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders, requireAdmin } from "../_shared/auth.ts";
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -36,6 +32,10 @@ function slugify(s: string) {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  // Admin via session, or pg_cron via service-role bearer.
+  const denied = await requireAdmin(req, { allowServiceRole: true });
+  if (denied) return denied;
 
   try {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY ausente");

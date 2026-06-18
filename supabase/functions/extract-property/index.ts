@@ -1,13 +1,14 @@
 // Extrai dados estruturados de imóvel a partir de texto bruto colado pela admin.
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders, requireAdmin } from "../_shared/auth.ts";
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  // Admin only — drains AI credits.
+  const denied = await requireAdmin(req);
+  if (denied) return denied;
 
   try {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY ausente");
