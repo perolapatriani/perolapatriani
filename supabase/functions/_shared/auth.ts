@@ -12,10 +12,28 @@ export const corsHeaders = {
 
 /**
  * Require the caller to be an authenticated admin user.
- * Accepts the cron job too (Authorization bearer = service role key).
+ * Optionally allow an internal cron caller that knows the shared secret stored
+ * in public.app_secrets (only readable by service_role).
  * Returns null on success, or a Response on failure.
  */
-export async function requireAdmin(req: Request, opts: { allowServiceRole?: boolean } = {}): Promise<Response | null> {
+export async function requireAdmin(
+  req: Request,
+  opts: { cronSecretKey?: string } = {},
+): Promise<Response | null> {
+  // Internal cron path — match X-Cron-Secret against app_secrets row.
+  if (opts.cronSecretKey) {
+    const provided = req.headers.get("X-Cron-Secret") || "";
+    if (provided) {
+      const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+      const { data: row } = await admin
+        .from("app_secrets")
+        .select("value")
+        .eq("key", opts.cronSecretKey)
+        .maybeSingle();
+      if (row?.value && provided === row.value) return null;
+    }
+  }
+
   const authHeader = req.headers.get("Authorization") || "";
   const token = authHeader.replace(/^Bearer\s+/i, "").trim();
 
