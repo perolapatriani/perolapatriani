@@ -1,7 +1,7 @@
 // Extrai dados estruturados de imóvel a partir de texto bruto colado pela admin.
 import { corsHeaders, requireAdmin } from "../_shared/auth.ts";
 
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
