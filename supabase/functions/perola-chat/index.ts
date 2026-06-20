@@ -90,8 +90,9 @@ ${JSON.stringify(catalog, null, 2)}`;
 
     if (!upstream.ok) {
       const t = await upstream.text();
+      console.error("Gemini upstream error", upstream.status, t);
       if (upstream.status === 429)
-        return new Response(JSON.stringify({ error: "Muitas requisições. Tente novamente em instantes." }), {
+        return new Response(JSON.stringify({ error: `Gemini 429: ${t}` }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
