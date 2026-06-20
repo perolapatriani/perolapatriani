@@ -1,23 +1,30 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, X, Send, Sparkles } from "lucide-react";
+import { X, Send, Sparkles, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
-import { whatsappLink, trackWaClick } from "@/lib/whatsapp";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
 const WELCOME: Msg = {
   role: "assistant",
   content:
-    "Olá! Sou a **Pérola** ✨\n\nMe conte rapidamente o que você procura (tipo de imóvel, bairro, faixa de valor) e eu respondo direto no seu **WhatsApp** — assim já começamos um atendimento personalizado.",
+    "Olá! Sou a **Pérola IA** ✨\n\nMe conte o que você procura (tipo de imóvel, bairro, faixa de valor) e eu te ajudo aqui mesmo. Se preferir falar direto comigo, é só pedir o WhatsApp.",
 };
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_KEY = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY) as string;
 
 export default function PerolaChat() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([WELCOME]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -27,18 +34,96 @@ export default function PerolaChat() {
     if (open) setTimeout(() => inputRef.current?.focus(), 100);
   }, [open]);
 
-  const send = () => {
+  const send = async () => {
     const text = input.trim();
-    if (!text) return;
-    setMessages((m) => [
-      ...m,
-      { role: "user", content: text },
-      { role: "assistant", content: "Perfeito! Te levei pro WhatsApp com essa mensagem. Em instantes respondo por lá 💬" },
-    ]);
+    if (!text || loading) return;
+    const next: Msg[] = [...messages, { role: "user", content: text }];
+    setMessages([...next, { role: "assistant", content: "" }]);
     setInput("");
-    trackWaClick({ source: "float", intent: "general", label: "perola_chat", value: 10 });
-    const url = whatsappLink(`Olá Pérola! Vim pelo site:\n\n${text}`);
-    window.open(url, "_blank", "noopener,noreferrer");
+    setLoading(true);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/perola-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          apikey: SUPABASE_KEY,
+        },
+        body: JSON.stringify({
+          messages: next.filter((m) => m.content.trim()).map((m) => ({ role: m.role, content: m.content })),
+        }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok || !res.body) {
+        const errJson = await res.json().catch(() => ({ error: "Erro inesperado" }));
+        throw new Error(errJson.error || `Erro ${res.status}`);
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let acc = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const raw of lines) {
+          const line = raw.trim();
+          if (!line.startsWith("data:")) continue;
+          const data = line.slice(5).trim();
+          if (!data || data === "[DONE]") continue;
+          try {
+            const json = JSON.parse(data);
+            const delta = json.choices?.[0]?.delta?.content ?? "";
+            if (delta) {
+              acc += delta;
+              setMessages((m) => {
+                const copy = [...m];
+                copy[copy.length - 1] = { role: "assistant", content: acc };
+                return copy;
+              });
+            }
+          } catch {
+            /* skip */
+          }
+        }
+      }
+
+      if (!acc.trim()) {
+        setMessages((m) => {
+          const copy = [...m];
+          copy[copy.length - 1] = {
+            role: "assistant",
+            content: "Hmm, não consegui responder agora. Quer falar direto comigo no WhatsApp? https://wa.me/5513991296030",
+          };
+          return copy;
+        });
+      }
+    } catch (e: any) {
+      if (e?.name === "AbortError") return;
+      console.error("PerolaChat error", e);
+      toast.error(e?.message || "Erro ao falar com a Pérola IA");
+      setMessages((m) => {
+        const copy = [...m];
+        copy[copy.length - 1] = {
+          role: "assistant",
+          content:
+            "Desculpe, tive um problema técnico agora. Você pode falar comigo direto pelo WhatsApp: https://wa.me/5513991296030",
+        };
+        return copy;
+      });
+    } finally {
+      setLoading(false);
+      abortRef.current = null;
+    }
   };
 
   return (
@@ -68,8 +153,8 @@ export default function PerolaChat() {
               <Sparkles className="h-4 w-4" strokeWidth={1.5} />
             </span>
             <div>
-              <p className="font-display text-lg leading-tight">Pérola Patriani</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">Resposta no WhatsApp</p>
+              <p className="font-display text-lg leading-tight">Pérola IA</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">Assistente do site</p>
             </div>
           </div>
           <button onClick={() => setOpen(false)} className="p-1.5 hover:bg-pearl/10 rounded-full" aria-label="Fechar">
@@ -89,9 +174,13 @@ export default function PerolaChat() {
                 )}
               >
                 {m.role === "assistant" ? (
-                  <div className="prose prose-sm max-w-none prose-a:text-rose-burnt prose-strong:text-graphite">
-                    <ReactMarkdown>{m.content}</ReactMarkdown>
-                  </div>
+                  m.content ? (
+                    <div className="prose prose-sm max-w-none prose-a:text-rose-burnt prose-strong:text-graphite">
+                      <ReactMarkdown>{m.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <Loader2 className="h-4 w-4 animate-spin text-rose-burnt" />
+                  )
                 ) : (
                   <p className="whitespace-pre-wrap">{m.content}</p>
                 )}
@@ -108,21 +197,21 @@ export default function PerolaChat() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
               rows={1}
+              disabled={loading}
               placeholder="Escreva o que você procura…"
-              className="flex-1 resize-none rounded-2xl border border-border bg-pearl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-burnt/30 max-h-32"
+              className="flex-1 resize-none rounded-2xl border border-border bg-pearl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-burnt/30 max-h-32 disabled:opacity-60"
             />
             <button
               onClick={send}
-              disabled={!input.trim()}
+              disabled={!input.trim() || loading}
               className="grid place-items-center h-10 w-10 rounded-full bg-graphite text-pearl hover:bg-rose-burnt disabled:opacity-40 transition shrink-0"
-              aria-label="Enviar para WhatsApp"
-              title="Enviar para WhatsApp"
+              aria-label="Enviar"
             >
-              <Send className="h-4 w-4" />
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </button>
           </div>
-          <p className="mt-2 text-[10px] text-muted-foreground text-center inline-flex items-center gap-1 justify-center w-full">
-            <MessageCircle className="h-3 w-3" /> Sua mensagem segue direto para o WhatsApp da Pérola.
+          <p className="mt-2 text-[10px] text-muted-foreground text-center w-full">
+            ✨ Respondido por IA — para falar com a Pérola pessoalmente, peça o WhatsApp.
           </p>
         </div>
       </div>
