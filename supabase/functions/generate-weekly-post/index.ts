@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
   if (denied) return denied;
 
   try {
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY ausente");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY ausente");
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
     let body: any = {};
