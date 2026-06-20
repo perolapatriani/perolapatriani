@@ -96,7 +96,7 @@ ${JSON.stringify(catalog, null, 2)}`;
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       if (upstream.status === 402)
-        return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Avise a Pérola." }), {
+        return new Response(JSON.stringify({ error: "Cota Gemini esgotada. Avise a Pérola." }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
