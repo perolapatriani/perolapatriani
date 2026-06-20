@@ -47,11 +47,11 @@ Deno.serve(async (req) => {
       },
     }];
 
-    const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const upstream = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${GEMINI_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gemini-2.0-flash",
         messages: [
           { role: "system", content: "Você é especialista em extrair dados de anúncios imobiliários e reescrever descrições de venda em tom boutique, elegante e em português brasileiro. Use SEMPRE a ferramenta preencher_imovel para responder. Quando uma informação não estiver clara no texto, retorne null para campos numéricos e omita o que não tiver certeza." },
           { role: "user", content: `Texto bruto do anúncio:\n\n${text}` },
