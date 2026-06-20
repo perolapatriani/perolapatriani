@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY ausente");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY ausente");
 
     const { messages }: { messages: ChatMsg[] } = await req.json();
     if (!Array.isArray(messages) || messages.length === 0) {
