@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
   if (denied) return denied;
 
   try {
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY ausente");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY ausente");
     const { text } = (await req.json()) as { text?: string };
     if (!text || text.trim().length < 20) {
       return new Response(JSON.stringify({ error: "Cole um texto com mais detalhes do imóvel." }), {
