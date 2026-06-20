@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
 
 interface ChatMsg {
   role: "user" | "assistant";
@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY ausente");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY ausente");
 
     const { messages }: { messages: ChatMsg[] } = await req.json();
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -75,14 +75,14 @@ REGRAS:
 CATÁLOGO ATUAL:
 ${JSON.stringify(catalog, null, 2)}`;
 
-    const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const upstream = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${GEMINI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gemini-2.0-flash",
         stream: true,
         messages: [{ role: "system", content: system }, ...messages],
       }),
@@ -96,7 +96,7 @@ ${JSON.stringify(catalog, null, 2)}`;
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       if (upstream.status === 402)
-        return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Avise a Pérola." }), {
+        return new Response(JSON.stringify({ error: "Cota Gemini esgotada. Avise a Pérola." }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

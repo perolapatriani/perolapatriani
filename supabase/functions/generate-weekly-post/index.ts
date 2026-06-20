@@ -4,7 +4,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, requireAdmin } from "../_shared/auth.ts";
 
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
   if (denied) return denied;
 
   try {
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY ausente");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY ausente");
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
     let body: any = {};
@@ -67,11 +67,11 @@ Deno.serve(async (req) => {
       },
     }];
 
-    const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const upstream = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${GEMINI_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gemini-2.0-flash",
         messages: [
           { role: "system", content: "Você é redator chefe de uma consultoria imobiliária boutique de alto padrão na Baixada Santista (Itanhaém, Peruíbe, Mongaguá, Praia Grande, Santos, Guarujá). Escreva sempre em português brasileiro elegante, sem clichês de corretor, com autoridade técnica e visão de mercado. NUNCA use emojis. Use SEMPRE a ferramenta criar_post." },
           { role: "user", content: `Escreva o post da semana sobre: "${tema}". Foque na realidade da Baixada Santista — especialmente Itanhaém. Inclua dados práticos, exemplos concretos de bairros/imóveis quando fizer sentido, e finalize com convite sutil a conhecer o portfólio Pérola Patriani.` },
