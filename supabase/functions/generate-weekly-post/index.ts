@@ -67,11 +67,11 @@ Deno.serve(async (req) => {
       },
     }];
 
-    const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const upstream = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${GEMINI_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gemini-2.0-flash",
         messages: [
           { role: "system", content: "Você é redator chefe de uma consultoria imobiliária boutique de alto padrão na Baixada Santista (Itanhaém, Peruíbe, Mongaguá, Praia Grande, Santos, Guarujá). Escreva sempre em português brasileiro elegante, sem clichês de corretor, com autoridade técnica e visão de mercado. NUNCA use emojis. Use SEMPRE a ferramenta criar_post." },
           { role: "user", content: `Escreva o post da semana sobre: "${tema}". Foque na realidade da Baixada Santista — especialmente Itanhaém. Inclua dados práticos, exemplos concretos de bairros/imóveis quando fizer sentido, e finalize com convite sutil a conhecer o portfólio Pérola Patriani.` },
