@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
       method: "POST",
       headers: { Authorization: `Bearer ${GEMINI_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         messages: [
           { role: "system", content: "Você é especialista em extrair dados de anúncios imobiliários e reescrever descrições de venda em tom boutique, elegante e em português brasileiro. Use SEMPRE a ferramenta preencher_imovel para responder. Quando uma informação não estiver clara no texto, retorne null para campos numéricos e omita o que não tiver certeza." },
           { role: "user", content: `Texto bruto do anúncio:\n\n${text}` },
