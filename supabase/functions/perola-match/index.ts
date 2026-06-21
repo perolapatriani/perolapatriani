@@ -1,4 +1,5 @@
 // Pérola IA Match — recebe respostas do quiz, recomenda 3 imóveis e salva lead.
+// Usa Gemini API (gratuito).
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -9,15 +10,15 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
 
 interface Answers {
-  goal?: string;        // moradia / investimento / segunda moradia / locacao
-  who?: string;         // solo / casal / familia / aposentado
-  type?: string;        // apartamento / casa / cobertura / indiferente
-  bedrooms?: string;    // 1 / 2 / 3 / 4+
-  budget?: string;      // até 500k / 500k-1M / 1M-2M / 2M+
-  vibe?: string;        // praia / centro / sossego / vista
+  goal?: string;
+  who?: string;
+  type?: string;
+  bedrooms?: string;
+  budget?: string;
+  vibe?: string;
   neighborhood?: string;
 }
 
@@ -25,7 +26,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY ausente");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY ausente");
 
     const { name, phone, email, answers } = (await req.json()) as {
       name: string; phone: string; email?: string; answers: Answers;
@@ -73,17 +74,17 @@ PERFIL DO CLIENTE:
 CATÁLOGO (${catalog.length} imóveis):
 ${JSON.stringify(catalog)}
 
-Responda APENAS com JSON válido neste formato exato:
+Responda APENAS com JSON válido neste formato exato (sem markdown, sem cercas de código):
 {
   "reasoning": "explicação curta e elegante (2-3 frases) de por que esses imóveis combinam com o perfil",
   "property_ids": ["uuid1", "uuid2", "uuid3"]
 }`;
 
-    const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const upstream = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${GEMINI_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
       }),
@@ -91,15 +92,19 @@ Responda APENAS com JSON válido neste formato exato:
 
     if (!upstream.ok) {
       const t = await upstream.text();
+      console.error("Gemini match error", upstream.status, t);
       if (upstream.status === 429) return new Response(JSON.stringify({ error: "Muitas requisições" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      if (upstream.status === 402) return new Response(JSON.stringify({ error: "Créditos esgotados" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      throw new Error(`Gateway ${upstream.status}: ${t}`);
+      throw new Error(`Gemini ${upstream.status}: ${t}`);
     }
 
     const json = await upstream.json();
     const content = json.choices?.[0]?.message?.content ?? "{}";
     let parsed: { reasoning?: string; property_ids?: string[] } = {};
-    try { parsed = JSON.parse(content); } catch { parsed = {}; }
+    try {
+      // Strip code fences if model adds them
+      const cleaned = content.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
+      parsed = JSON.parse(cleaned);
+    } catch { parsed = {}; }
 
     const validIds = (parsed.property_ids ?? []).filter((id) =>
       catalog.some((p) => p.id === id),
@@ -107,7 +112,6 @@ Responda APENAS com JSON válido neste formato exato:
 
     const reasoning = parsed.reasoning ?? "Selecionei imóveis que combinam com o seu perfil.";
 
-    // Salva lead usando service role (bypass RLS) para evitar problemas com chamadas anônimas
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     await admin.from("match_leads").insert({
       name: name.trim(),
@@ -118,7 +122,6 @@ Responda APENAS com JSON válido neste formato exato:
       ai_reasoning: reasoning,
     });
 
-    // Notifica por e-mail (não bloqueia resposta)
     admin.functions.invoke("notify-lead", {
       body: {
         name: name.trim(),

@@ -1,4 +1,4 @@
-import { corsHeaders, esc } from "../_shared/auth.ts";
+import { corsHeaders, esc, sanitizeHeader, isValidEmail } from "../_shared/auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_calendar/calendar/v3";
@@ -16,7 +16,23 @@ Deno.serve(async (req) => {
     if (!GOOGLE_CALENDAR_API_KEY) throw new Error("GOOGLE_CALENDAR_API_KEY is not configured");
 
     const body = await req.json();
-    const { propertyTitle, propertyCode, date, time, duration, visitorName, visitorPhone, visitorEmail } = body;
+    // Honeypot — bots costumam preencher; humanos não veem o campo.
+    if (body?.website) {
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Sanitiza tudo que vai pra header de e-mail ou descrição.
+    const propertyTitle = sanitizeHeader(body?.propertyTitle, 180);
+    const propertyCode = sanitizeHeader(body?.propertyCode, 40);
+    const visitorName = sanitizeHeader(body?.visitorName, 120);
+    const visitorPhone = sanitizeHeader(body?.visitorPhone, 40);
+    const rawEmail = String(body?.visitorEmail ?? "").trim();
+    const visitorEmail = rawEmail && isValidEmail(rawEmail) ? rawEmail : "";
+    const date = sanitizeHeader(body?.date, 10);
+    const time = sanitizeHeader(body?.time, 5);
+    const duration = body?.duration;
 
     if (!propertyTitle || !date || !time || !visitorName || !visitorPhone) {
       return new Response(
@@ -25,7 +41,22 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Valida formato de data/hora e janela plausível (até 1 ano à frente).
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
+      return new Response(JSON.stringify({ error: "Data ou hora inválida" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const slotStart = new Date(`${date}T${time}:00-03:00`);
+    const now = Date.now();
+    if (isNaN(slotStart.getTime()) || slotStart.getTime() < now - 60_000 || slotStart.getTime() > now + 365 * 24 * 3600 * 1000) {
+      return new Response(JSON.stringify({ error: "Data fora da janela permitida" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const durationMinutes = duration && [30, 60, 90].includes(Number(duration)) ? Number(duration) : 60;
+
 
     // Build event start/end
     const startDateTime = `${date}T${time}:00`;

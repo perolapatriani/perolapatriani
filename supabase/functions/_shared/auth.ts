@@ -83,3 +83,15 @@ export function esc(value: unknown): string {
 export function cap(value: unknown, max = 500): string {
   return String(value ?? "").slice(0, max);
 }
+
+/** Strip CR/LF/NUL — required before placing user data in raw email headers. */
+export function sanitizeHeader(value: unknown, max = 200): string {
+  return String(value ?? "").replace(/[\r\n\0]/g, " ").slice(0, max).trim();
+}
+
+/** Strict RFC-ish email format validation. */
+export function isValidEmail(value: unknown): boolean {
+  const s = String(value ?? "").trim();
+  if (!s || s.length > 254) return false;
+  return /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']{2,}$/.test(s) && !/[\r\n\0]/.test(s);
+}

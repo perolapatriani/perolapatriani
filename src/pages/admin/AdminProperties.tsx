@@ -153,7 +153,17 @@ export default function AdminProperties() {
           </div>
 
           <Field label="Descrição">
-            <TextArea value={editing.description ?? ""} onChange={(e) => onChange("description", e.target.value)} rows={5} />
+            <div className="space-y-2">
+              <TextArea value={editing.description ?? ""} onChange={(e) => onChange("description", e.target.value)} rows={5} />
+              <AiCopyButton
+                editing={editing}
+                onApply={(d) => setEditing((p) => p ? {
+                  ...p,
+                  title: d.title && !p.id ? d.title : p.title,
+                  description: d.description ?? p.description,
+                } : p)}
+              />
+            </div>
           </Field>
 
           <Field label="Vídeo (URL do YouTube ou Vimeo)" hint="Cole o link completo do vídeo">
@@ -301,5 +311,56 @@ function AiPasteBox({ onApply }: { onApply: (d: ExtractedProperty) => void }) {
         <GhostButton onClick={() => { setText(""); }}>Limpar</GhostButton>
       </div>
     </div>
+  );
+}
+
+function AiCopyButton({ editing, onApply }: { editing: Property; onApply: (d: { title?: string; description?: string; seo_meta?: string }) => void }) {
+  const [loading, setLoading] = useState(false);
+  const run = async () => {
+    const bullets = [
+      editing.title && `Título atual: ${editing.title}`,
+      editing.description && `Descrição atual: ${editing.description}`,
+      `Tipo: ${editing.property_type}`,
+      editing.neighborhood_name && `Bairro: ${editing.neighborhood_name}`,
+      editing.bedrooms && `${editing.bedrooms} dormitório(s)`,
+      editing.suites && `${editing.suites} suíte(s)`,
+      editing.parking && `${editing.parking} vaga(s)`,
+      editing.area_m2 && `${editing.area_m2} m²`,
+      editing.price && `Preço: R$ ${editing.price.toLocaleString("pt-BR")}`,
+    ].filter(Boolean).join("\n");
+    if (bullets.length < 20) { toast.error("Preencha mais campos antes de gerar"); return; }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-property-copy", {
+        body: {
+          bullets,
+          context: {
+            property_type: editing.property_type,
+            neighborhood: editing.neighborhood_name,
+            bedrooms: editing.bedrooms,
+            suites: editing.suites,
+            parking: editing.parking,
+            area_m2: editing.area_m2,
+            price: editing.price,
+          },
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      onApply((data as any).data);
+      toast.success("Descrição gerada — revise antes de salvar");
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha ao gerar descrição");
+    } finally { setLoading(false); }
+  };
+  return (
+    <button
+      type="button"
+      onClick={run}
+      disabled={loading}
+      className="inline-flex items-center gap-1.5 text-xs rounded-full bg-blush/50 text-rose-burnt border border-rose-burnt/30 px-3 py-1.5 hover:bg-blush transition disabled:opacity-50"
+    >
+      <Sparkles className="h-3 w-3" /> {loading ? "Gerando…" : "Gerar descrição com IA"}
+    </button>
   );
 }
