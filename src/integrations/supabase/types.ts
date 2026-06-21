@@ -34,6 +34,10 @@ export type Database = {
       }
       contact_leads: {
         Row: {
+          ai_qualified_at: string | null
+          ai_score: string | null
+          ai_suggested_reply: string | null
+          ai_summary: string | null
           created_at: string
           email: string
           id: string
@@ -44,6 +48,10 @@ export type Database = {
           status: string
         }
         Insert: {
+          ai_qualified_at?: string | null
+          ai_score?: string | null
+          ai_suggested_reply?: string | null
+          ai_summary?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -54,6 +62,10 @@ export type Database = {
           status?: string
         }
         Update: {
+          ai_qualified_at?: string | null
+          ai_score?: string | null
+          ai_suggested_reply?: string | null
+          ai_summary?: string | null
           created_at?: string
           email?: string
           id?: string
