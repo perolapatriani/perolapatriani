@@ -1,4 +1,3 @@
-// touch deploy
 // Qualifica um lead com Gemini: temperatura (quente/morno/frio), resumo
 // e sugestão de resposta pronta pra Pérola enviar no WhatsApp.
 // Admin-only.
