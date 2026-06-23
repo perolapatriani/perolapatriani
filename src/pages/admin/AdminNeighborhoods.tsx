@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Sparkles } from "lucide-react";
 import { Field, TextInput, TextArea, PrimaryButton, GhostButton } from "@/components/admin/Field";
 import ImageUploader from "@/components/admin/ImageUploader";
 import { slugify } from "@/lib/slug";
@@ -25,6 +25,23 @@ export default function AdminNeighborhoods() {
   });
   const [editing, setEditing] = useState<Item | null>(null);
   const [saving, setSaving] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const generateWithAi = async () => {
+    if (!editing?.name) { toast.error("Informe o nome do bairro"); return; }
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-neighborhood-copy", {
+        body: { name: editing.name, notes: editing.description ?? "" },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const d = (data as any).data;
+      const desc = `${d.description}\n\nDestaques:\n• ${d.highlights.join("\n• ")}`;
+      setEditing((p) => p ? { ...p, description: desc } : p);
+      toast.success("Descrição gerada — revise antes de salvar");
+    } catch (e: any) { toast.error(e.message); } finally { setAiLoading(false); }
+  };
 
   useEffect(() => {
     if (editing && !editing.id && editing.name) {
@@ -72,7 +89,19 @@ export default function AdminNeighborhoods() {
             <Field label="Slug"><TextInput value={editing.slug} onChange={(e) => onChange("slug", e.target.value)} /></Field>
             <Field label="Ordem"><TextInput type="number" value={editing.display_order} onChange={(e) => onChange("display_order", Number(e.target.value))} /></Field>
           </div>
-          <Field label="Descrição"><TextArea value={editing.description ?? ""} onChange={(e) => onChange("description", e.target.value)} /></Field>
+          <Field label="Descrição">
+            <div className="space-y-2">
+              <TextArea value={editing.description ?? ""} onChange={(e) => onChange("description", e.target.value)} rows={6} />
+              <button
+                type="button"
+                onClick={generateWithAi}
+                disabled={aiLoading}
+                className="inline-flex items-center gap-1.5 text-xs rounded-full bg-blush/50 text-rose-burnt border border-rose-burnt/30 px-3 py-1.5 hover:bg-blush transition disabled:opacity-50"
+              >
+                <Sparkles className="h-3 w-3" /> {aiLoading ? "Gerando…" : "Gerar descrição com IA"}
+              </button>
+            </div>
+          </Field>
           <ImageUploader value={editing.image_url ? [editing.image_url] : []} onChange={(urls) => onChange("image_url", urls[0] ?? null)} multiple={false} folder="neighborhoods" label="Imagem" />
           <div className="flex gap-3">
             <PrimaryButton onClick={save} disabled={saving}>{saving ? "Salvando…" : "Salvar"}</PrimaryButton>
