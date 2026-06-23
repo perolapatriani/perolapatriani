@@ -6,6 +6,7 @@ import { Plus, Pencil, Trash2, Star, Instagram, Sparkles } from "lucide-react";
 import InstagramCardDialog from "@/components/admin/InstagramCardDialog";
 import { Field, TextInput, TextArea, Select, PrimaryButton, GhostButton } from "@/components/admin/Field";
 import ImageUploader from "@/components/admin/ImageUploader";
+import PropertyAiTools from "@/components/admin/PropertyAiTools";
 import { slugify } from "@/lib/slug";
 
 type Property = {
@@ -176,6 +177,9 @@ export default function AdminProperties() {
             folder="properties"
             label="Fotos"
           />
+
+          <PropertyAiTools editing={editing} />
+
 
           <div className="flex flex-wrap gap-6 pt-2">
             <label className="inline-flex items-center gap-2 text-sm">

@@ -48,8 +48,9 @@ export async function requireAdmin(
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
 
-  const { data: claims, error } = await supabase.auth.getClaims(token);
-  if (error || !claims?.claims?.sub) {
+  const { data: userData, error } = await supabase.auth.getUser(token);
+  const userId = userData?.user?.id;
+  if (error || !userId) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -58,7 +59,7 @@ export async function requireAdmin(
   // Verify admin role via SECURITY DEFINER function.
   const admin = createClient(SUPABASE_URL, SERVICE_KEY);
   const { data: isAdmin } = await admin.rpc("has_role", {
-    _user_id: claims.claims.sub,
+    _user_id: userId,
     _role: "admin",
   });
   if (!isAdmin) {
