@@ -59,7 +59,7 @@ export async function requireAdmin(
   // Verify admin role via SECURITY DEFINER function.
   const admin = createClient(SUPABASE_URL, SERVICE_KEY);
   const { data: isAdmin } = await admin.rpc("has_role", {
-    _user_id: claims.claims.sub,
+    _user_id: userId,
     _role: "admin",
   });
   if (!isAdmin) {
