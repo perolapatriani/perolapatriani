@@ -49,13 +49,21 @@ export default function SharePostButtons({ caption, getFiles }: Props) {
     }
   };
 
-  // Fire-and-forget: copy caption when user clicks an external link (no await before navigation)
-  const handleLinkClick = () => {
-    if (!caption) return;
-    navigator.clipboard?.writeText(caption).then(
-      () => toast.success("Legenda copiada — cole no app"),
-      () => {},
-    );
+  // Open in the TOP window (escape preview iframe) and copy caption in background
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    if (caption) {
+      navigator.clipboard?.writeText(caption).then(
+        () => toast.success("Legenda copiada — cole no app"),
+        () => {},
+      );
+    }
+    try {
+      const top = window.top || window;
+      top.open(href, "_blank", "noopener,noreferrer");
+    } catch {
+      window.open(href, "_blank", "noopener,noreferrer");
+    }
   };
 
   return (
@@ -92,7 +100,7 @@ export default function SharePostButtons({ caption, getFiles }: Props) {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={handleLinkClick}
+              onClick={(e) => handleLinkClick(e, href)}
               className={`inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[10px] uppercase tracking-[0.18em] ${className}`}
             >
               <Icon className="h-3.5 w-3.5" /> {label}
