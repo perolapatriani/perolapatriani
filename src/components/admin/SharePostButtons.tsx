@@ -49,7 +49,17 @@ export default function SharePostButtons({ caption, getFiles }: Props) {
     }
   };
 
-  // Open in the TOP window (escape preview iframe) and copy caption in background
+  const isInsideFrame = () => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  };
+
+  // Instagram/TikTok/YouTube refuse to render inside Lovable's preview iframe.
+  // In preview, navigate the TOP window on the same user click; on the published site,
+  // keep the normal new-tab behavior.
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     if (caption) {
@@ -58,11 +68,28 @@ export default function SharePostButtons({ caption, getFiles }: Props) {
         () => {},
       );
     }
+
+    if (isInsideFrame()) {
+      try {
+        window.top?.location.assign(href);
+        return;
+      } catch {
+        const topLink = document.createElement("a");
+        topLink.href = href;
+        topLink.target = "_top";
+        topLink.rel = "noopener noreferrer";
+        document.body.appendChild(topLink);
+        topLink.click();
+        topLink.remove();
+        return;
+      }
+    }
+
     try {
-      const top = window.top || window;
-      top.open(href, "_blank", "noopener,noreferrer");
+      const popup = window.open(href, "_blank", "noopener,noreferrer");
+      if (!popup) window.location.assign(href);
     } catch {
-      window.open(href, "_blank", "noopener,noreferrer");
+      window.location.assign(href);
     }
   };
 
@@ -98,7 +125,7 @@ export default function SharePostButtons({ caption, getFiles }: Props) {
             <a
               key={k}
               href={href}
-              target="_blank"
+              target={typeof window !== "undefined" && isInsideFrame() ? "_top" : "_blank"}
               rel="noopener noreferrer"
               onClick={(e) => handleLinkClick(e, href)}
               className={`inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[10px] uppercase tracking-[0.18em] ${className}`}
