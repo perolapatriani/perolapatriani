@@ -1,21 +1,23 @@
-import { Instagram, Music2, Youtube, Copy, Check } from "lucide-react";
+import { Instagram, Music2, Youtube, Copy, Check, Share2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 type Props = {
   caption?: string;
-  /** PNG blobs/canvases to also attach via Web Share API when supported */
+  /** PNG blobs/canvases to also attach via Web Share API when supported (mobile) */
   getFiles?: () => Promise<File[]>;
 };
 
-const OPEN = {
-  instagram: "https://www.instagram.com/",
-  tiktok: "https://www.tiktok.com/upload?lang=pt-BR",
-  youtube: "https://studio.youtube.com/",
+const LINKS = {
+  instagram: { href: "https://www.instagram.com/", label: "Instagram", Icon: Instagram, className: "bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#8134af] text-white" },
+  tiktok:    { href: "https://www.tiktok.com/upload?lang=pt-BR", label: "TikTok", Icon: Music2, className: "bg-graphite text-pearl" },
+  youtube:   { href: "https://studio.youtube.com/", label: "YouTube", Icon: Youtube, className: "bg-[#FF0000] text-white" },
 };
 
 export default function SharePostButtons({ caption, getFiles }: Props) {
   const [copied, setCopied] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const canNativeShare = typeof navigator !== "undefined" && !!(navigator as any).canShare;
 
   const copyCaption = async () => {
     if (!caption) return;
@@ -29,28 +31,38 @@ export default function SharePostButtons({ caption, getFiles }: Props) {
     }
   };
 
-  const openWith = async (target: keyof typeof OPEN) => {
-    if (caption) {
-      try { await navigator.clipboard.writeText(caption); toast.success("Legenda copiada · cole no app"); } catch {}
+  const nativeShare = async () => {
+    if (!getFiles) return;
+    setSharing(true);
+    try {
+      const files = await getFiles();
+      const data: any = { files, text: caption || "" };
+      if ((navigator as any).canShare?.(data)) {
+        await (navigator as any).share(data);
+      } else {
+        toast.error("Compartilhamento nativo indisponível");
+      }
+    } catch {
+      // user cancel
+    } finally {
+      setSharing(false);
     }
-    // Try Web Share with files (mobile) → opens native picker including Instagram/TikTok
-    if (getFiles && (navigator as any).canShare) {
-      try {
-        const files = await getFiles();
-        const data: any = { files, text: caption || "" };
-        if ((navigator as any).canShare(data)) {
-          await (navigator as any).share(data);
-          return;
-        }
-      } catch { /* fall through */ }
-    }
-    window.open(OPEN[target], "_blank", "noopener,noreferrer");
+  };
+
+  // Fire-and-forget: copy caption when user clicks an external link (no await before navigation)
+  const handleLinkClick = () => {
+    if (!caption) return;
+    navigator.clipboard?.writeText(caption).then(
+      () => toast.success("Legenda copiada — cole no app"),
+      () => {},
+    );
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {caption && (
         <button
+          type="button"
           onClick={copyCaption}
           className="w-full inline-flex items-center justify-center gap-2 rounded-full border border-border bg-pearl px-4 py-2 text-[11px] uppercase tracking-[0.2em] text-graphite hover:bg-champagne/40"
         >
@@ -58,19 +70,39 @@ export default function SharePostButtons({ caption, getFiles }: Props) {
           {copied ? "Copiado" : "Copiar legenda"}
         </button>
       )}
+
+      {canNativeShare && getFiles && (
+        <button
+          type="button"
+          onClick={nativeShare}
+          disabled={sharing}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-rose-burnt px-4 py-2.5 text-[11px] uppercase tracking-[0.2em] text-pearl disabled:opacity-50"
+        >
+          <Share2 className="h-3.5 w-3.5" />
+          {sharing ? "Abrindo…" : "Compartilhar (celular)"}
+        </button>
+      )}
+
       <div className="grid grid-cols-3 gap-2">
-        <button onClick={() => openWith("instagram")} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#8134af] px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-white">
-          <Instagram className="h-3.5 w-3.5" /> Instagram
-        </button>
-        <button onClick={() => openWith("tiktok")} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-graphite px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-pearl">
-          <Music2 className="h-3.5 w-3.5" /> TikTok
-        </button>
-        <button onClick={() => openWith("youtube")} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#FF0000] px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-white">
-          <Youtube className="h-3.5 w-3.5" /> YouTube
-        </button>
+        {(Object.keys(LINKS) as Array<keyof typeof LINKS>).map((k) => {
+          const { href, label, Icon, className } = LINKS[k];
+          return (
+            <a
+              key={k}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleLinkClick}
+              className={`inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[10px] uppercase tracking-[0.18em] ${className}`}
+            >
+              <Icon className="h-3.5 w-3.5" /> {label}
+            </a>
+          );
+        })}
       </div>
+
       <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
-        No celular abre o seletor nativo (Instagram/TikTok). No desktop abre a página de upload — baixe o PNG e cole a legenda.
+        Baixe o PNG, clique no botão da rede e cole a legenda (já copiada) no app.
       </p>
     </div>
   );
