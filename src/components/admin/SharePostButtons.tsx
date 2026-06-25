@@ -100,7 +100,7 @@ export default function SharePostButtons({ caption, getFiles }: Props) {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={handleLinkClick}
+              onClick={(e) => handleLinkClick(e, href)}
               className={`inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[10px] uppercase tracking-[0.18em] ${className}`}
             >
               <Icon className="h-3.5 w-3.5" /> {label}
