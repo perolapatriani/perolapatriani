@@ -1,21 +1,39 @@
-## Problema
+## Reposicionar "Vender seu imóvel" como "Descubra quanto vale seu imóvel"
 
-No clique dos botões Instagram/TikTok/YouTube a legenda é copiada, mas nada abre. O `handleLinkClick` chama `e.preventDefault()` e depois tenta `window.top.location.assign(href)`. No preview da Lovable o `window.top` é cross-origin — o acesso lança exceção silenciosa ou é bloqueado, então a navegação nunca acontece. O fallback com `<a target="_top">` também é barrado pelo sandbox do iframe.
+Mudança de copy + foco: em vez de pedir "cadastre seu imóvel para venda" (alto compromisso), oferecer **avaliação gratuita de valor** (baixo compromisso, lead magnet clássico que converte muito mais).
 
-## Correção
+### Mudanças de texto
 
-Em `src/components/admin/SharePostButtons.tsx`:
+**`src/components/home/SellWithUs.tsx`** (seção da home)
+- Eyebrow: "Para proprietários" → "Avaliação gratuita"
+- Título: "Quer vender seu imóvel com estratégia?" → "Descubra quanto vale o seu imóvel"
+- Subtítulo: focar em "análise de valor de mercado gratuita e sem compromisso, baseada em dados reais do litoral paulista"
+- Bullets: "Análise de valor em até 24h", "Comparativo com imóveis similares vendidos", "Sem compromisso de venda", "Relatório personalizado por WhatsApp"
+- CTA primário: "Cadastrar meu imóvel" → "Quero saber quanto vale"
+- Citação lateral: "Saber o valor real é o primeiro passo para decidir."
 
-1. **Remover** `handleLinkClick` e o `e.preventDefault()`. Deixar o `<a>` nativo abrir a URL — navegadores tratam isso como gesto direto do usuário e não bloqueiam.
-2. **Sempre** usar `target="_blank"` + `rel="noopener noreferrer"`. Em iframe do Lovable isso abre uma nova aba de topo normalmente (testado pelo próprio botão "Abrir em nova aba" do preview).
-3. **Copiar legenda em background** via `onMouseDown` (dispara antes do navigate, sem bloquear) chamando `navigator.clipboard.writeText(caption)` sem await.
-4. **Botão "Compartilhar (celular)"**: manter `nativeShare`, mas quando `navigator.canShare` não existir, esconder o botão (já é o caso) — sem mudança de comportamento.
-5. Remover utilitários `isInsideFrame` que ficaram sem uso.
+**`src/pages/Vender.tsx`**
+- `<Seo title>`: "Descubra quanto vale seu imóvel · Pérola Patriani"
+- `<Seo description>`: avaliação gratuita de imóveis no litoral paulista
+- H1: "Descubra quanto vale o seu imóvel"
+- Parágrafo: "Receba uma avaliação gratuita e sem compromisso..."
+- Botão submit: "Quero vender com a Pérola" → "Receber avaliação gratuita"
+- Toast: "Cadastro recebido!" → "Pedido de avaliação recebido!"
+- Aside "Por que vender comigo?" → "Como funciona a avaliação":
+  - "Análise comparativa com vendas recentes da região"
+  - "Avaliação enviada por WhatsApp em até 24h"
+  - "Você decide se quer vender ou não — sem pressão"
+- Mensagem do WhatsApp ajustada para "Quero receber avaliação do meu imóvel"
 
-Nada de mudança em layout, cores ou nos diálogos que consomem o componente.
+**`src/components/layout/Header.tsx`** (se houver link "Vender")
+- Trocar label para "Avaliar imóvel" (verificar e ajustar)
 
-## Verificação
+**`public/llms.txt`**
+- Linha `/vender`: "Avaliação gratuita de imóveis para proprietários no litoral paulista."
 
-- Abrir admin → Blog/Imóveis/Lançamentos → gerar card → clicar Instagram: nova aba abre em `instagram.com` e toast "Legenda copiada".
-- Repetir para TikTok e YouTube.
-- Em mobile com Web Share API, botão "Compartilhar" continua abrindo o seletor nativo.
+### O que NÃO muda
+- Rota `/vender` permanece (evita quebrar links já compartilhados)
+- Tabela `seller_leads` e edge function `notify-lead` — mesmos campos, só muda o `source` para `avaliacao_gratuita` para diferenciar no admin
+- Estrutura do formulário permanece (os mesmos dados são necessários pra avaliar)
+
+Posso seguir?
