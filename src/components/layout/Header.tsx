@@ -13,7 +13,7 @@ const NAV = [
   { to: "/lancamentos", label: "Lançamentos" },
   { to: "/bairros", label: "Bairros" },
   { to: "/match", label: "Match IA" },
-  { to: "/vender", label: "Vender" },
+  { to: "/vender", label: "Avaliar imóvel" },
   { to: "/sobre", label: "Sobre" },
   { to: "/blog", label: "Blog" },
   { to: "/contato", label: "Contato" },
