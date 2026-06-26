@@ -49,48 +49,12 @@ export default function SharePostButtons({ caption, getFiles }: Props) {
     }
   };
 
-  const isInsideFrame = () => {
-    try {
-      return window.self !== window.top;
-    } catch {
-      return true;
-    }
-  };
-
-  // Instagram/TikTok/YouTube refuse to render inside Lovable's preview iframe.
-  // In preview, navigate the TOP window on the same user click; on the published site,
-  // keep the normal new-tab behavior.
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
-    if (caption) {
-      navigator.clipboard?.writeText(caption).then(
-        () => toast.success("Legenda copiada — cole no app"),
-        () => {},
-      );
-    }
-
-    if (isInsideFrame()) {
-      try {
-        window.top?.location.assign(href);
-        return;
-      } catch {
-        const topLink = document.createElement("a");
-        topLink.href = href;
-        topLink.target = "_top";
-        topLink.rel = "noopener noreferrer";
-        document.body.appendChild(topLink);
-        topLink.click();
-        topLink.remove();
-        return;
-      }
-    }
-
-    try {
-      const popup = window.open(href, "_blank", "noopener,noreferrer");
-      if (!popup) window.location.assign(href);
-    } catch {
-      window.location.assign(href);
-    }
+  const copyInBackground = () => {
+    if (!caption) return;
+    navigator.clipboard?.writeText(caption).then(
+      () => toast.success("Legenda copiada — cole no app"),
+      () => {},
+    );
   };
 
   return (
@@ -125,9 +89,10 @@ export default function SharePostButtons({ caption, getFiles }: Props) {
             <a
               key={k}
               href={href}
-              target={typeof window !== "undefined" && isInsideFrame() ? "_top" : "_blank"}
+              target="_blank"
               rel="noopener noreferrer"
-              onClick={(e) => handleLinkClick(e, href)}
+              onMouseDown={copyInBackground}
+              onClick={copyInBackground}
               className={`inline-flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[10px] uppercase tracking-[0.18em] ${className}`}
             >
               <Icon className="h-3.5 w-3.5" /> {label}
@@ -142,6 +107,7 @@ export default function SharePostButtons({ caption, getFiles }: Props) {
     </div>
   );
 }
+
 
 export async function canvasToFile(canvas: HTMLCanvasElement | null, name: string): Promise<File | null> {
   if (!canvas) return null;
