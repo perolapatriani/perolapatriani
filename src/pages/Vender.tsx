@@ -50,7 +50,7 @@ export default function Vender() {
         desired_price: r.data.desired_price ? Number(r.data.desired_price.replace(/[^\d]/g, "")) || null : null,
         bedrooms: r.data.bedrooms ? Number(r.data.bedrooms) : null,
         notes: r.data.notes || null,
-        source: "sell_form",
+        source: "avaliacao_gratuita",
       });
 
       // notifica por e-mail (reusa edge function existente)
@@ -59,17 +59,17 @@ export default function Vender() {
           name: r.data.name,
           phone: r.data.phone,
           email: r.data.email || "",
-          source: "captacao_imovel",
-          message: `Tipo: ${r.data.property_type}\nBairro: ${r.data.neighborhood}\nEndereço: ${r.data.address || "—"}\nDormitórios: ${r.data.bedrooms || "—"}\nValor desejado: ${r.data.desired_price || "—"}\n\nObservações:\n${r.data.notes || "—"}`,
+          source: "avaliacao_gratuita",
+          message: `Tipo: ${r.data.property_type}\nBairro: ${r.data.neighborhood}\nEndereço: ${r.data.address || "—"}\nDormitórios: ${r.data.bedrooms || "—"}\nValor estimado pelo proprietário: ${r.data.desired_price || "—"}\n\nObservações:\n${r.data.notes || "—"}`,
         },
       }).catch(() => {});
 
-      const waMsg = `Olá Pérola! Quero cadastrar meu imóvel para venda.\n\nNome: ${r.data.name}\nTelefone: ${r.data.phone}\nTipo: ${r.data.property_type}\nBairro: ${r.data.neighborhood}${r.data.desired_price ? `\nValor desejado: ${r.data.desired_price}` : ""}${r.data.notes ? `\n\n${r.data.notes}` : ""}`;
-      trackWaClick({ source: "other", intent: "contact_form", label: "captacao_imovel", value: 20 });
+      const waMsg = `Olá Pérola! Quero receber a avaliação gratuita do meu imóvel.\n\nNome: ${r.data.name}\nTelefone: ${r.data.phone}\nTipo: ${r.data.property_type}\nBairro: ${r.data.neighborhood}${r.data.desired_price ? `\nValor estimado por mim: ${r.data.desired_price}` : ""}${r.data.notes ? `\n\n${r.data.notes}` : ""}`;
+      trackWaClick({ source: "other", intent: "contact_form", label: "avaliacao_imovel", value: 20 });
       window.open(whatsappLink(waMsg), "_blank", "noopener,noreferrer");
 
-      toast({ title: "Cadastro recebido!", description: "A Pérola entrará em contato em breve." });
-      navigate("/obrigado?from=sell_form&intent=captacao");
+      toast({ title: "Pedido de avaliação recebido!", description: "A Pérola enviará sua análise em até 24h." });
+      navigate("/obrigado?from=sell_form&intent=avaliacao");
     } catch (err) {
       console.error(err);
       toast({ title: "Erro ao enviar", description: "Tente novamente ou fale direto no WhatsApp.", variant: "destructive" });
@@ -81,17 +81,17 @@ export default function Vender() {
   return (
     <>
       <Seo
-        title="Cadastre seu imóvel para venda · Pérola Patriani"
-        description="Anuncie seu imóvel com a consultoria boutique de Pérola Patriani. Avaliação técnica, divulgação premium e acompanhamento completo."
+        title="Descubra quanto vale seu imóvel · Pérola Patriani"
+        description="Avaliação gratuita e sem compromisso do seu imóvel no litoral paulista. Análise comparativa com vendas recentes, enviada por WhatsApp em até 24h."
         path="/vender"
       />
       <section className="container-editorial py-16">
-        <p className="eyebrow mb-4">Para proprietários</p>
+        <p className="eyebrow mb-4">Avaliação gratuita</p>
         <h1 className="font-display text-5xl md:text-6xl text-graphite mb-4 text-balance">
-          Cadastre seu imóvel <em className="text-rose-burnt">para venda</em>
+          Descubra quanto <em className="text-rose-burnt">vale o seu imóvel</em>
         </h1>
         <p className="text-muted-foreground max-w-2xl mb-10">
-          Conte um pouco sobre o imóvel e a Pérola fará uma análise personalizada antes de entrar em contato com você.
+          Receba uma avaliação gratuita e sem compromisso, baseada em vendas recentes da sua região. Preencha os dados abaixo e a Pérola envia sua análise por WhatsApp em até 24h.
         </p>
 
         <div className="grid lg:grid-cols-12 gap-12">
@@ -136,8 +136,8 @@ export default function Vender() {
                   <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
                 </select>
               </Field>
-              <Field label="Valor desejado (R$)" error={errors.desired_price}>
-                <input name="desired_price" inputMode="numeric" maxLength={15} className={inputCls} placeholder="Ex: 850000" />
+              <Field label="Valor que você imagina (R$)" error={errors.desired_price}>
+                <input name="desired_price" inputMode="numeric" maxLength={15} className={inputCls} placeholder="Opcional — Ex: 850000" />
               </Field>
             </div>
 
@@ -147,17 +147,17 @@ export default function Vender() {
 
             <button type="submit" disabled={sending} className="rounded-full bg-graphite px-8 py-4 text-xs uppercase tracking-[0.22em] text-pearl hover:bg-rose-burnt transition-colors disabled:opacity-50 inline-flex items-center gap-2">
               <Home className="h-4 w-4" strokeWidth={1.5} />
-              {sending ? "Enviando…" : "Quero vender com a Pérola"}
+              {sending ? "Enviando…" : "Receber avaliação gratuita"}
             </button>
           </form>
 
           <aside className="lg:col-span-5 space-y-4">
             <div className="glass-strong rounded-3xl p-8 space-y-5">
-              <h3 className="font-display text-2xl text-graphite">Por que vender comigo?</h3>
+              <h3 className="font-display text-2xl text-graphite">Como funciona a avaliação</h3>
               {[
-                { icon: ShieldCheck, t: "Avaliação técnica baseada em dados reais do mercado local" },
-                { icon: Sparkles, t: "Divulgação premium com fotos profissionais e posicionamento estratégico" },
-                { icon: MessageCircle, t: "Atendimento curado: só compradores qualificados visitam o imóvel" },
+                { icon: ShieldCheck, t: "Análise comparativa com vendas recentes da sua região" },
+                { icon: Sparkles, t: "Relatório personalizado enviado por WhatsApp em até 24h" },
+                { icon: MessageCircle, t: "Você decide se quer vender ou não — sem pressão, sem compromisso" },
               ].map(({ icon: Icon, t }) => (
                 <div key={t} className="flex items-start gap-3 text-sm text-graphite">
                   <span className="grid place-items-center h-9 w-9 rounded-full bg-blush/40 shrink-0 text-rose-burnt">
@@ -171,7 +171,7 @@ export default function Vender() {
                   href={wa.general()}
                   source="other"
                   intent="general"
-                  label="Vender via WhatsApp"
+                  label="Avaliar via WhatsApp"
                   className="inline-flex items-center gap-2 rounded-full border border-graphite/20 px-5 py-3 text-xs uppercase tracking-[0.2em] text-graphite hover:bg-champagne transition"
                 >
                   <MessageCircle className="h-3.5 w-3.5" /> Prefiro falar no WhatsApp

@@ -10,7 +10,7 @@
 - [Lançamentos](/lancamentos): Empreendimentos novos e pré-lançamentos exclusivos.
 - [Bairros](/bairros): Guia dos bairros atendidos no litoral paulista.
 - [Match de Perfil](/match): Quiz com IA que recomenda 3 imóveis personalizados em 1 minuto.
-- [Vender meu imóvel](/vender): Cadastro para proprietários que querem anunciar imóveis com consultoria boutique.
+- [Avaliar meu imóvel](/vender): Avaliação gratuita e sem compromisso para proprietários no litoral paulista, com relatório enviado por WhatsApp em até 24h.
 - [Comparar](/comparar): Comparativo lado a lado entre imóveis selecionados.
 - [Sobre](/sobre): Quem é Pérola Patriani e a proposta de consultoria.
 - [Blog](/blog): Artigos sobre mercado imobiliário, investimento e estilo de vida no litoral.
