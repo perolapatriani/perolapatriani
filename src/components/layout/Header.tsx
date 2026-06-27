@@ -1,22 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { Menu, X, MessageCircle } from "lucide-react";
+import { Menu, X, MessageCircle, Home, Building2, Map, Sparkles, MapPin, Wand2, Calculator, User, BookOpen, Mail } from "lucide-react";
 import logo from "@/assets/logo-perola.jpg";
 import { wa } from "@/lib/whatsapp";
 import { WaLink } from "@/components/WaLink";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { to: "/", label: "Início" },
-  { to: "/imoveis", label: "Imóveis" },
-  { to: "/mapa", label: "Mapa" },
-  { to: "/lancamentos", label: "Lançamentos" },
-  { to: "/bairros", label: "Bairros" },
-  { to: "/match", label: "Match IA" },
-  { to: "/vender", label: "Avaliar imóvel" },
-  { to: "/sobre", label: "Sobre" },
-  { to: "/blog", label: "Blog" },
-  { to: "/contato", label: "Contato" },
+  { to: "/", label: "Início", icon: Home },
+  { to: "/imoveis", label: "Imóveis", icon: Building2 },
+  { to: "/mapa", label: "Mapa", icon: Map },
+  { to: "/lancamentos", label: "Lançamentos", icon: Sparkles },
+  { to: "/bairros", label: "Bairros", icon: MapPin },
+  { to: "/match", label: "Match IA", icon: Wand2 },
+  { to: "/vender", label: "Avaliar imóvel", icon: Calculator },
+  { to: "/sobre", label: "Sobre", icon: User },
+  { to: "/blog", label: "Blog", icon: BookOpen },
+  { to: "/contato", label: "Contato", icon: Mail },
 ];
 
 export default function Header() {
