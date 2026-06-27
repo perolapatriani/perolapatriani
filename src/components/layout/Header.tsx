@@ -100,8 +100,8 @@ export default function Header() {
       {/* Mobile drawer */}
       <div
         className={cn(
-          "lg:hidden overflow-hidden transition-[max-height,opacity] duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]",
-          open ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+          "lg:hidden overflow-y-auto overscroll-contain transition-[max-height,opacity] duration-700 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]",
+          open ? "max-h-[calc(100vh-5rem)] opacity-100" : "max-h-0 opacity-0"
         )}
       >
         <nav className="container-editorial flex flex-col gap-1 pt-6 pb-8">
