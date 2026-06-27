@@ -104,16 +104,16 @@ export default function Header() {
           open ? "max-h-[calc(100vh-5rem)] opacity-100" : "max-h-0 opacity-0"
         )}
       >
-        <nav className="container-editorial flex flex-col gap-1 pt-6 pb-8">
+        <nav className="container-editorial flex flex-col gap-0.5 pt-3 pb-6">
           {NAV.map((item, i) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === "/"}
-              style={{ animationDelay: `${i * 60}ms` }}
+              style={{ animationDelay: `${i * 40}ms` }}
               className={({ isActive }) =>
                 cn(
-                  "animate-fade-in py-3 border-b border-border/50 font-display text-2xl transition-colors",
+                  "animate-fade-in py-2 border-b border-border/50 font-display text-lg transition-colors",
                   isActive ? "text-rose-burnt" : "text-graphite hover:text-rose-burnt"
                 )
               }
@@ -126,12 +126,13 @@ export default function Header() {
             source="header_mobile"
             intent="general"
             label="Fale comigo no WhatsApp"
-            className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-graphite px-6 py-3.5 text-xs uppercase tracking-[0.2em] text-pearl"
+            className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-graphite px-6 py-3 text-xs uppercase tracking-[0.2em] text-pearl"
           >
             <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
             Fale comigo no WhatsApp
           </WaLink>
         </nav>
+
       </div>
     </header>
   );
