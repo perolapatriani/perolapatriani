@@ -1,22 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { Menu, X, MessageCircle } from "lucide-react";
+import { Menu, X, MessageCircle, Home, Building2, Map, Sparkles, MapPin, Wand2, Calculator, User, BookOpen, Mail } from "lucide-react";
 import logo from "@/assets/logo-perola.jpg";
 import { wa } from "@/lib/whatsapp";
 import { WaLink } from "@/components/WaLink";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { to: "/", label: "Início" },
-  { to: "/imoveis", label: "Imóveis" },
-  { to: "/mapa", label: "Mapa" },
-  { to: "/lancamentos", label: "Lançamentos" },
-  { to: "/bairros", label: "Bairros" },
-  { to: "/match", label: "Match IA" },
-  { to: "/vender", label: "Avaliar imóvel" },
-  { to: "/sobre", label: "Sobre" },
-  { to: "/blog", label: "Blog" },
-  { to: "/contato", label: "Contato" },
+  { to: "/", label: "Início", icon: Home },
+  { to: "/imoveis", label: "Imóveis", icon: Building2 },
+  { to: "/mapa", label: "Mapa", icon: Map },
+  { to: "/lancamentos", label: "Lançamentos", icon: Sparkles },
+  { to: "/bairros", label: "Bairros", icon: MapPin },
+  { to: "/match", label: "Match IA", icon: Wand2 },
+  { to: "/vender", label: "Avaliar imóvel", icon: Calculator },
+  { to: "/sobre", label: "Sobre", icon: User },
+  { to: "/blog", label: "Blog", icon: BookOpen },
+  { to: "/contato", label: "Contato", icon: Mail },
 ];
 
 export default function Header() {
@@ -104,32 +104,36 @@ export default function Header() {
           open ? "max-h-[calc(100dvh-4rem)] opacity-100" : "max-h-0 opacity-0"
         )}
       >
-        <nav className="container-editorial flex flex-col gap-0 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          {NAV.map((item, i) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              style={{ animationDelay: `${i * 40}ms` }}
-              className={({ isActive }) =>
-                cn(
-                  "animate-fade-in py-1.5 border-b border-border/50 font-display text-base leading-tight transition-colors",
-                  isActive ? "text-rose-burnt" : "text-graphite hover:text-rose-burnt"
-                )
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+        <nav className="container-editorial flex flex-col gap-0 pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          {NAV.map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === "/"}
+                style={{ animationDelay: `${i * 30}ms` }}
+                className={({ isActive }) =>
+                  cn(
+                    "animate-fade-in flex items-center gap-3 py-2 border-b border-border/40 text-[13px] tracking-wide transition-colors",
+                    isActive ? "text-rose-burnt" : "text-graphite hover:text-rose-burnt"
+                  )
+                }
+              >
+                <Icon className="h-4 w-4 shrink-0 opacity-70" strokeWidth={1.5} />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
           <WaLink
             href={wa.general()}
             source="header_mobile"
             intent="general"
-            label="Fale comigo no WhatsApp"
-            className="mt-3 inline-flex w-full max-w-full items-center justify-center gap-2 rounded-full bg-graphite px-4 py-2.5 text-center text-[11px] uppercase leading-tight tracking-[0.12em] text-pearl"
+            label="WhatsApp"
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-graphite px-4 py-2.5 text-[12px] tracking-wide text-pearl"
           >
-            <MessageCircle className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
-            Fale comigo no WhatsApp
+            <MessageCircle className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+            WhatsApp
           </WaLink>
         </nav>
 
