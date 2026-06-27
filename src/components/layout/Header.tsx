@@ -104,32 +104,36 @@ export default function Header() {
           open ? "max-h-[calc(100dvh-4rem)] opacity-100" : "max-h-0 opacity-0"
         )}
       >
-        <nav className="container-editorial flex flex-col gap-0 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          {NAV.map((item, i) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              style={{ animationDelay: `${i * 40}ms` }}
-              className={({ isActive }) =>
-                cn(
-                  "animate-fade-in py-1.5 border-b border-border/50 font-display text-base leading-tight transition-colors",
-                  isActive ? "text-rose-burnt" : "text-graphite hover:text-rose-burnt"
-                )
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+        <nav className="container-editorial flex flex-col gap-0 pt-1 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          {NAV.map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === "/"}
+                style={{ animationDelay: `${i * 30}ms` }}
+                className={({ isActive }) =>
+                  cn(
+                    "animate-fade-in flex items-center gap-3 py-2 border-b border-border/40 text-[13px] tracking-wide transition-colors",
+                    isActive ? "text-rose-burnt" : "text-graphite hover:text-rose-burnt"
+                  )
+                }
+              >
+                <Icon className="h-4 w-4 shrink-0 opacity-70" strokeWidth={1.5} />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
           <WaLink
             href={wa.general()}
             source="header_mobile"
             intent="general"
-            label="Fale comigo no WhatsApp"
-            className="mt-3 inline-flex w-full max-w-full items-center justify-center gap-2 rounded-full bg-graphite px-4 py-2.5 text-center text-[11px] uppercase leading-tight tracking-[0.12em] text-pearl"
+            label="WhatsApp"
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-graphite px-4 py-2.5 text-[12px] tracking-wide text-pearl"
           >
-            <MessageCircle className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
-            Fale comigo no WhatsApp
+            <MessageCircle className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+            WhatsApp
           </WaLink>
         </nav>
 
