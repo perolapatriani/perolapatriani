@@ -83,9 +83,10 @@ Deno.serve(async (req) => {
 
     if (!upstream.ok) {
       const t = await upstream.text();
+      console.error("generate-weekly-post upstream", upstream.status, t);
       if (upstream.status === 429) return new Response(JSON.stringify({ error: "Rate limit" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (upstream.status === 402) return new Response(JSON.stringify({ error: "Créditos esgotados" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      throw new Error(`Gateway ${upstream.status}: ${t}`);
+      throw new Error("upstream_failed");
     }
 
     const json = await upstream.json();
@@ -141,7 +142,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.error("generate-weekly-post", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "erro" }), {
+    return new Response(JSON.stringify({ error: "Não foi possível gerar o post agora." }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
