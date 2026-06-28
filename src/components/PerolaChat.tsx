@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { X, Send, Sparkles, Loader2 } from "lucide-react";
+import { X, Send, Sparkles, Loader2, MessageCircle } from "lucide-react";
+import { whatsappLink, trackWaClick } from "@/lib/whatsapp";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -131,13 +132,13 @@ export default function PerolaChat() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-24 right-6 z-40 group inline-flex items-center gap-2 rounded-full bg-graphite text-pearl pl-3 pr-5 py-3 shadow-elegant hover:bg-rose-burnt transition-all"
-          aria-label="Abrir chat da Pérola"
+          className="fixed bottom-5 right-5 z-50 group"
+          aria-label="Falar com a Pérola"
         >
-          <span className="grid place-items-center h-8 w-8 rounded-full bg-rose-burnt/30">
+          <span className="absolute inset-0 rounded-full bg-blush/40 animate-ping" aria-hidden />
+          <span className="relative grid place-items-center h-11 w-11 rounded-full bg-graphite text-pearl shadow-elegant transition-all duration-500 group-hover:bg-rose-burnt group-hover:scale-105">
             <Sparkles className="h-4 w-4" strokeWidth={1.5} />
           </span>
-          <span className="text-xs uppercase tracking-[0.2em]">Fale com a Pérola</span>
         </button>
       )}
 
@@ -210,8 +211,25 @@ export default function PerolaChat() {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </button>
           </div>
+          <button
+            onClick={() => {
+              const conv = messages
+                .filter((m) => m.content.trim() && m !== WELCOME)
+                .map((m) => (m.role === "user" ? `Eu: ${m.content}` : `Pérola IA: ${m.content}`))
+                .join("\n\n");
+              const msg = conv
+                ? `Olá Pérola! Conversei com a Pérola IA no site e quero continuar com você:\n\n${conv}`
+                : "Olá Pérola! Vim pelo site e gostaria de conversar com você.";
+              trackWaClick({ source: "float", intent: "general", label: "Perola IA → WhatsApp" });
+              window.open(whatsappLink(msg), "_blank", "noopener,noreferrer");
+            }}
+            className="mt-2 w-full inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] text-white py-2.5 text-xs uppercase tracking-[0.2em] hover:opacity-90 transition"
+          >
+            <MessageCircle className="h-4 w-4" strokeWidth={2} />
+            Continuar no WhatsApp
+          </button>
           <p className="mt-2 text-[10px] text-muted-foreground text-center w-full">
-            ✨ Respondido por IA — para falar com a Pérola pessoalmente, peça o WhatsApp.
+            ✨ Respondido por IA — finalize a conversa direto com a Pérola no WhatsApp.
           </p>
         </div>
       </div>
