@@ -211,8 +211,25 @@ export default function PerolaChat() {
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </button>
           </div>
+          <button
+            onClick={() => {
+              const conv = messages
+                .filter((m) => m.content.trim() && m !== WELCOME)
+                .map((m) => (m.role === "user" ? `Eu: ${m.content}` : `Pérola IA: ${m.content}`))
+                .join("\n\n");
+              const msg = conv
+                ? `Olá Pérola! Conversei com a Pérola IA no site e quero continuar com você:\n\n${conv}`
+                : "Olá Pérola! Vim pelo site e gostaria de conversar com você.";
+              trackWaClick({ source: "float", intent: "general", label: "Perola IA → WhatsApp" });
+              window.open(whatsappLink(msg), "_blank", "noopener,noreferrer");
+            }}
+            className="mt-2 w-full inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] text-white py-2.5 text-xs uppercase tracking-[0.2em] hover:opacity-90 transition"
+          >
+            <MessageCircle className="h-4 w-4" strokeWidth={2} />
+            Continuar no WhatsApp
+          </button>
           <p className="mt-2 text-[10px] text-muted-foreground text-center w-full">
-            ✨ Respondido por IA — para falar com a Pérola pessoalmente, peça o WhatsApp.
+            ✨ Respondido por IA — finalize a conversa direto com a Pérola no WhatsApp.
           </p>
         </div>
       </div>
