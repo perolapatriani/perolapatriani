@@ -28,15 +28,31 @@ Deno.serve(async (req) => {
   try {
     if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY ausente");
 
-    const { name, phone, email, answers } = (await req.json()) as {
-      name: string; phone: string; email?: string; answers: Answers;
+    const raw = (await req.json()) as {
+      name?: unknown; phone?: unknown; email?: unknown; answers?: Record<string, unknown>;
     };
 
-    if (!name?.trim() || !phone?.trim()) {
+    const name = String(raw.name ?? "").trim().slice(0, 200);
+    const phone = String(raw.phone ?? "").trim().slice(0, 50);
+    const email = raw.email ? String(raw.email).trim().slice(0, 254) : undefined;
+
+    if (!name || !phone) {
       return new Response(JSON.stringify({ error: "Nome e telefone são obrigatórios" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const capStr = (v: unknown, max = 100) => String(v ?? "").slice(0, max);
+    const rawAnswers = (raw.answers ?? {}) as Record<string, unknown>;
+    const answers: Answers = {
+      goal: capStr(rawAnswers.goal),
+      who: capStr(rawAnswers.who),
+      type: capStr(rawAnswers.type),
+      bedrooms: capStr(rawAnswers.bedrooms, 20),
+      budget: capStr(rawAnswers.budget),
+      vibe: capStr(rawAnswers.vibe),
+      neighborhood: capStr(rawAnswers.neighborhood),
+    };
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const { data: props = [] } = await supabase
@@ -94,7 +110,7 @@ Responda APENAS com JSON válido neste formato exato (sem markdown, sem cercas d
       const t = await upstream.text();
       console.error("Gemini match error", upstream.status, t);
       if (upstream.status === 429) return new Response(JSON.stringify({ error: "Muitas requisições" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      throw new Error(`Gemini ${upstream.status}: ${t}`);
+      return new Response(JSON.stringify({ error: "Serviço temporariamente indisponível." }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const json = await upstream.json();
@@ -114,9 +130,9 @@ Responda APENAS com JSON válido neste formato exato (sem markdown, sem cercas d
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     await admin.from("match_leads").insert({
-      name: name.trim(),
-      phone: phone.trim(),
-      email: email?.trim() || null,
+      name,
+      phone,
+      email: email || null,
       answers,
       recommended_property_ids: validIds,
       ai_reasoning: reasoning,
@@ -124,9 +140,9 @@ Responda APENAS com JSON válido neste formato exato (sem markdown, sem cercas d
 
     admin.functions.invoke("notify-lead", {
       body: {
-        name: name.trim(),
-        phone: phone.trim(),
-        email: email?.trim() || "",
+        name,
+        phone,
+        email: email || "",
         message: `Match IA\n\nRespostas: ${JSON.stringify(answers, null, 2)}\n\nIA: ${reasoning}`,
         source: "match_ia",
       },
@@ -138,7 +154,7 @@ Responda APENAS com JSON válido neste formato exato (sem markdown, sem cercas d
     );
   } catch (e) {
     console.error("perola-match error", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "erro" }), {
+    return new Response(JSON.stringify({ error: "Serviço temporariamente indisponível." }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

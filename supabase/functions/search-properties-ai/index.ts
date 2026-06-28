@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
       const t = await upstream.text();
       console.error("Gemini search error", upstream.status, t);
       if (upstream.status === 429) return new Response(JSON.stringify({ error: "Rate limit" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      throw new Error(`Gemini ${upstream.status}: ${t}`);
+      throw new Error("upstream_failed");
     }
 
     const json = await upstream.json();
@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.error("search-properties-ai error", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "erro" }), {
+    return new Response(JSON.stringify({ error: "Não foi possível processar sua busca agora." }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

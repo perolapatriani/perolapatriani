@@ -21,9 +21,27 @@ Deno.serve(async (req) => {
   try {
     if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY ausente");
 
-    const { messages }: { messages: ChatMsg[] } = await req.json();
-    if (!Array.isArray(messages) || messages.length === 0) {
+    const { messages: rawMessages }: { messages: ChatMsg[] } = await req.json();
+    if (!Array.isArray(rawMessages) || rawMessages.length === 0) {
       return new Response(JSON.stringify({ error: "messages obrigatório" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const MAX_MESSAGES = 20;
+    const MAX_MSG_LEN = 2000;
+    if (rawMessages.length > MAX_MESSAGES) {
+      return new Response(JSON.stringify({ error: "Conversa muito longa. Recarregue o chat." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const messages: ChatMsg[] = rawMessages
+      .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+      .map((m) => ({ role: m.role, content: m.content.slice(0, MAX_MSG_LEN) }));
+    if (messages.length === 0) {
+      return new Response(JSON.stringify({ error: "messages inválido" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -92,17 +110,17 @@ ${JSON.stringify(catalog, null, 2)}`;
       const t = await upstream.text();
       console.error("Gemini upstream error", upstream.status, t);
       if (upstream.status === 429)
-        return new Response(JSON.stringify({ error: `Gemini 429: ${t}` }), {
+        return new Response(JSON.stringify({ error: "Muitas requisições, tente novamente em instantes." }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       if (upstream.status === 402)
-        return new Response(JSON.stringify({ error: "Cota Gemini esgotada. Avise a Pérola." }), {
+        return new Response(JSON.stringify({ error: "Serviço temporariamente indisponível." }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
-      return new Response(JSON.stringify({ error: `Gateway erro ${upstream.status}: ${t}` }), {
-        status: 500,
+      return new Response(JSON.stringify({ error: "Serviço temporariamente indisponível." }), {
+        status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -117,7 +135,7 @@ ${JSON.stringify(catalog, null, 2)}`;
     });
   } catch (e) {
     console.error("perola-chat error", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "erro" }), {
+    return new Response(JSON.stringify({ error: "Serviço temporariamente indisponível." }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

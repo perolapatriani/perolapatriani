@@ -106,7 +106,8 @@ Deno.serve(async (req) => {
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(`Google Calendar API failed [${response.status}]: ${JSON.stringify(data)}`);
+      console.error("Google Calendar API failed", response.status, data);
+      throw new Error("calendar_upstream_failed");
     }
 
     // Save as lead
@@ -243,9 +244,8 @@ Deno.serve(async (req) => {
     );
   } catch (error: unknown) {
     console.error("Error scheduling visit:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
+      JSON.stringify({ success: false, error: "Não foi possível agendar a visita agora. Tente novamente em instantes." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
