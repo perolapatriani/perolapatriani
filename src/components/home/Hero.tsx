@@ -76,15 +76,8 @@ export default function Hero() {
               Ver imóveis
               <ArrowRight className="h-3.5 w-3.5 transition-transform duration-500 group-hover:translate-x-1" strokeWidth={1.5} />
             </button>
-            <WaLink
-              href={wa.general()}
-              source="hero"
-              intent="general"
-              label="Falar com Pérola"
-              className="inline-flex items-center gap-3 rounded-full glass-strong px-7 py-3.5 text-xs uppercase tracking-[0.22em] text-graphite hover:bg-pearl transition-colors shadow-soft"
-            >
-              Falar com Pérola
-            </WaLink>
+          </div>
+
           </div>
         </div>
 
