@@ -32,6 +32,9 @@ import Vender from "./pages/Vender";
 import Match from "./pages/Match";
 import AdminSellerLeads from "./pages/admin/AdminSellerLeads";
 import AdminMatchLeads from "./pages/admin/AdminMatchLeads";
+import AdminCrm from "./pages/admin/AdminCrm";
+import AdminCrmContact from "./pages/admin/AdminCrmContact";
+
 import { CompareProvider } from "./hooks/useCompare";
 import CompareBar from "./components/CompareBar";
 import NotFound from "./pages/NotFound.tsx";
@@ -67,7 +70,10 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<Admin />}>
                 <Route index element={<AdminOverview />} />
+                <Route path="crm" element={<AdminCrm />} />
+                <Route path="crm/:id" element={<AdminCrmContact />} />
                 <Route path="leads" element={<AdminLeads />} />
+
                 <Route path="captacoes" element={<AdminSellerLeads />} />
                 <Route path="match" element={<AdminMatchLeads />} />
                 <Route path="imoveis" element={<AdminProperties />} />

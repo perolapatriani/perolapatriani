@@ -77,6 +77,113 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_contacts: {
+        Row: {
+          ai_qualified_at: string | null
+          ai_score: string | null
+          ai_suggested_reply: string | null
+          ai_summary: string | null
+          created_at: string
+          email_normalized: string | null
+          id: string
+          last_interaction_at: string
+          name: string | null
+          notes: string | null
+          owner_id: string | null
+          phone_normalized: string | null
+          raw_email: string | null
+          raw_phone: string | null
+          source_first: string | null
+          source_last: string | null
+          status: string
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          ai_qualified_at?: string | null
+          ai_score?: string | null
+          ai_suggested_reply?: string | null
+          ai_summary?: string | null
+          created_at?: string
+          email_normalized?: string | null
+          id?: string
+          last_interaction_at?: string
+          name?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          phone_normalized?: string | null
+          raw_email?: string | null
+          raw_phone?: string | null
+          source_first?: string | null
+          source_last?: string | null
+          status?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          ai_qualified_at?: string | null
+          ai_score?: string | null
+          ai_suggested_reply?: string | null
+          ai_summary?: string | null
+          created_at?: string
+          email_normalized?: string | null
+          id?: string
+          last_interaction_at?: string
+          name?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          phone_normalized?: string | null
+          raw_email?: string | null
+          raw_phone?: string | null
+          source_first?: string | null
+          source_last?: string | null
+          status?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crm_events: {
+        Row: {
+          contact_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          payload: Json
+          source: string | null
+          title: string | null
+          type: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          payload?: Json
+          source?: string | null
+          title?: string | null
+          type: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          payload?: Json
+          source?: string | null
+          title?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_events_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       launches: {
         Row: {
           cover_url: string | null
@@ -463,6 +570,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      merge_lead: {
+        Args: {
+          p_email: string
+          p_event_at?: string
+          p_event_type: string
+          p_name: string
+          p_payload: Json
+          p_phone: string
+          p_source: string
+          p_title: string
+        }
+        Returns: string
+      }
+      normalize_email: { Args: { e: string }; Returns: string }
+      normalize_phone: { Args: { p: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "editor"
