@@ -70,7 +70,10 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/admin" element={<Admin />}>
                 <Route index element={<AdminOverview />} />
+                <Route path="crm" element={<AdminCrm />} />
+                <Route path="crm/:id" element={<AdminCrmContact />} />
                 <Route path="leads" element={<AdminLeads />} />
+
                 <Route path="captacoes" element={<AdminSellerLeads />} />
                 <Route path="match" element={<AdminMatchLeads />} />
                 <Route path="imoveis" element={<AdminProperties />} />
