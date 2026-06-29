@@ -32,6 +32,9 @@ import Vender from "./pages/Vender";
 import Match from "./pages/Match";
 import AdminSellerLeads from "./pages/admin/AdminSellerLeads";
 import AdminMatchLeads from "./pages/admin/AdminMatchLeads";
+import AdminCrm from "./pages/admin/AdminCrm";
+import AdminCrmContact from "./pages/admin/AdminCrmContact";
+
 import { CompareProvider } from "./hooks/useCompare";
 import CompareBar from "./components/CompareBar";
 import NotFound from "./pages/NotFound.tsx";
