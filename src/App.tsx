@@ -34,7 +34,6 @@ import AdminSellerLeads from "./pages/admin/AdminSellerLeads";
 import AdminMatchLeads from "./pages/admin/AdminMatchLeads";
 import AdminCrm from "./pages/admin/AdminCrm";
 import AdminCrmContact from "./pages/admin/AdminCrmContact";
-import AdminAnalytics from "./pages/admin/AdminAnalytics";
 
 import { CompareProvider } from "./hooks/useCompare";
 import CompareBar from "./components/CompareBar";
@@ -73,7 +72,6 @@ const App = () => (
                 <Route index element={<AdminOverview />} />
                 <Route path="crm" element={<AdminCrm />} />
                 <Route path="crm/:id" element={<AdminCrmContact />} />
-                <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="leads" element={<AdminLeads />} />
 
                 <Route path="captacoes" element={<AdminSellerLeads />} />
