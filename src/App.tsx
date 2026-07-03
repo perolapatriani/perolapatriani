@@ -34,6 +34,7 @@ import AdminSellerLeads from "./pages/admin/AdminSellerLeads";
 import AdminMatchLeads from "./pages/admin/AdminMatchLeads";
 import AdminCrm from "./pages/admin/AdminCrm";
 import AdminCrmContact from "./pages/admin/AdminCrmContact";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
 
 import { CompareProvider } from "./hooks/useCompare";
 import CompareBar from "./components/CompareBar";
