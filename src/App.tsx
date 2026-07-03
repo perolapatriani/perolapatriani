@@ -73,6 +73,7 @@ const App = () => (
                 <Route index element={<AdminOverview />} />
                 <Route path="crm" element={<AdminCrm />} />
                 <Route path="crm/:id" element={<AdminCrmContact />} />
+                <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="leads" element={<AdminLeads />} />
 
                 <Route path="captacoes" element={<AdminSellerLeads />} />
