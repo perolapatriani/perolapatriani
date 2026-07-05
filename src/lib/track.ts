@@ -20,13 +20,13 @@ type TrackOpts = {
 
 export async function track(type: string, opts: TrackOpts = {}) {
   try {
-    await supabase.from("site_events").insert({
+    await supabase.from("site_events").insert([{
       type,
-      path: typeof window !== "undefined" ? window.location.pathname : null,
+      path: typeof window !== "undefined" ? window.location.pathname : undefined,
       session_id: getSessionId(),
-      property_id: opts.property_id ?? null,
-      payload: opts.payload ?? {},
-    });
+      property_id: opts.property_id ?? undefined,
+      payload: (opts.payload ?? {}) as never,
+    }]);
   } catch {
     // silencioso — telemetria não pode quebrar o site
   }
