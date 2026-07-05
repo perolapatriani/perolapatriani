@@ -110,6 +110,28 @@ export default function FinancingSimulator({ propertyPrice, propertyId }: Props)
     return { downValue, loan, firstPayment, lastPayment, totalPaid, totalInterest };
   }, [propertyPrice, downPct, years, system, rate, cfg.maxYears]);
 
+  // Registra a simulação (debounce 1,2s pra não spammar em cada slide)
+  const firstRun = useRef(true);
+  useEffect(() => {
+    if (firstRun.current) { firstRun.current = false; return; }
+    const t = setTimeout(() => {
+      track("financing_simulation", {
+        property_id: propertyId ?? null,
+        payload: {
+          line,
+          system,
+          price: Number(propertyPrice) || 0,
+          down_pct: downPct,
+          years,
+          rate,
+          first_payment: Math.round(result.firstPayment),
+          total_paid: Math.round(result.totalPaid),
+        },
+      });
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [line, system, downPct, years, propertyPrice, propertyId, rate, result.firstPayment, result.totalPaid]);
+
   const caixaUrl = "https://www8.caixa.gov.br/siopiinternet-web/simulaOperacaoInternet.do?method=inicializarCasoUso";
 
   return (
