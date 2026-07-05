@@ -37,6 +37,15 @@ export default function PropertyDetail() {
   const { slug } = useParams();
   const { data: p, isLoading } = useProperty(slug);
 
+  useEffect(() => {
+    if (p?.id) {
+      track("property_view", {
+        property_id: p.id,
+        payload: { slug: p.slug, title: p.title, price: p.price, neighborhood: p.neighborhood_name },
+      });
+    }
+  }, [p?.id]);
+
   if (isLoading) return <div className="container-editorial py-20 text-center font-display text-2xl">Carregando…</div>;
   if (!p) return <div className="container-editorial py-20 text-center font-display text-2xl">Imóvel não encontrado.</div>;
 
