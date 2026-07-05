@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ExternalLink, TrendingUp, Users, Home, Wand2, Star, Building2 } from "lucide-react";
+import { ExternalLink, TrendingUp, Users, Home, Wand2, Star, Building2, Eye, Calculator } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
