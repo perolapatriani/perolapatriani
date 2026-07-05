@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Calculator, ExternalLink } from "lucide-react";
+import { track } from "@/lib/track";
 
 interface Props {
   propertyPrice: number;
+  propertyId?: string;
 }
 
 const fmt = (n: number) =>
