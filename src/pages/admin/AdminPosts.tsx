@@ -82,10 +82,25 @@ export default function AdminPosts() {
           <Field label="Resumo"><TextArea value={editing.excerpt ?? ""} onChange={(e) => onChange("excerpt", e.target.value)} rows={3} /></Field>
           <Field label="Conteúdo (markdown ou texto)"><TextArea value={editing.content ?? ""} onChange={(e) => onChange("content", e.target.value)} rows={12} /></Field>
           <ImageUploader value={editing.cover_url ? [editing.cover_url] : []} onChange={(urls) => onChange("cover_url", urls[0] ?? null)} multiple={false} folder="posts" label="Capa" />
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={editing.is_published} onChange={(e) => onChange("is_published", e.target.checked)} />
-            Publicado
-          </label>
+          <div className="grid sm:grid-cols-2 gap-5">
+            <Field label="Agendar publicação (opcional)">
+              <input
+                type="datetime-local"
+                value={editing.scheduled_for ? new Date(editing.scheduled_for).toISOString().slice(0, 16) : ""}
+                onChange={(e) => onChange("scheduled_for", e.target.value ? new Date(e.target.value).toISOString() : null)}
+                className="w-full rounded-xl border border-border bg-pearl px-4 py-2.5 text-sm"
+              />
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Se marcado, o post é publicado automaticamente na data. Ignore quando "Publicado agora" já está ativo.
+              </p>
+            </Field>
+            <Field label="Status">
+              <label className="inline-flex items-center gap-2 text-sm mt-2">
+                <input type="checkbox" checked={editing.is_published} onChange={(e) => onChange("is_published", e.target.checked)} />
+                Publicado agora
+              </label>
+            </Field>
+          </div>
           <div className="flex gap-3">
             <PrimaryButton onClick={save} disabled={saving}>{saving ? "Salvando…" : "Salvar"}</PrimaryButton>
             <GhostButton onClick={() => setEditing(null)}>Cancelar</GhostButton>
@@ -99,12 +114,10 @@ export default function AdminPosts() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="font-display text-3xl text-graphite">Blog</h2>
-        <div className="flex gap-2">
-          <GhostButton onClick={generateWeekly} disabled={generating}>
-            <Sparkles className="h-3.5 w-3.5" /> {generating ? "Gerando…" : "Gerar post da semana (IA)"}
-          </GhostButton>
-          <PrimaryButton onClick={() => setEditing({ ...empty })}><Plus className="h-3.5 w-3.5" /> Novo post</PrimaryButton>
-        </div>
+        <PrimaryButton onClick={() => setEditing({ ...empty })}><Plus className="h-3.5 w-3.5" /> Novo post</PrimaryButton>
+      </div>
+      <div className="rounded-2xl border border-dashed border-border bg-pearl/40 px-5 py-3 text-xs text-muted-foreground">
+        Dica: preencha <strong className="text-graphite">Agendar publicação</strong> ao criar rascunhos e o sistema publica automaticamente no dia — sem IA, sem esforço.
       </div>
       {isLoading ? <p>Carregando…</p> : items.length === 0 ? (
         <div className="luxe-card p-10 text-center">
@@ -113,20 +126,30 @@ export default function AdminPosts() {
         </div>
       ) : (
         <div className="grid gap-3">
-          {items.map((p) => (
-            <div key={p.id} className="luxe-card p-4 flex gap-4 items-center">
-              <div className="w-20 h-20 rounded-lg overflow-hidden bg-champagne flex-shrink-0">
-                {p.cover_url && <img src={p.cover_url} alt={p.title} className="w-full h-full object-cover" />}
+          {items.map((p) => {
+            const scheduled = !p.is_published && p.scheduled_for;
+            return (
+              <div key={p.id} className="luxe-card p-4 flex gap-4 items-center">
+                <div className="w-20 h-20 rounded-lg overflow-hidden bg-champagne flex-shrink-0">
+                  {p.cover_url && <img src={p.cover_url} alt={p.title} className="w-full h-full object-cover" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display text-lg truncate">{p.title}</h3>
+                  <p className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
+                    {p.is_published ? "Publicado" : scheduled ? (
+                      <span className="inline-flex items-center gap-1 text-rose-burnt">
+                        <CalendarClock className="h-3 w-3" />
+                        Agendado para {new Date(p.scheduled_for!).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    ) : "Rascunho"} · {p.author}
+                  </p>
+                </div>
+                <button onClick={() => setCardPost(p)} className="p-2 rounded-full hover:bg-champagne text-rose-burnt" title="Cards Instagram + TikTok"><Share2 className="h-4 w-4" /></button>
+                <button onClick={() => setEditing(p)} className="p-2 rounded-full hover:bg-champagne"><Pencil className="h-4 w-4" /></button>
+                <button onClick={() => p.id && remove(p.id)} className="p-2 rounded-full hover:bg-destructive/10 text-destructive"><Trash2 className="h-4 w-4" /></button>
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-display text-lg truncate">{p.title}</h3>
-                <p className="text-xs text-muted-foreground">{p.is_published ? "Publicado" : "Rascunho"} · {p.author}</p>
-              </div>
-              <button onClick={() => setCardPost(p)} className="p-2 rounded-full hover:bg-champagne text-rose-burnt" title="Cards Instagram + TikTok"><Share2 className="h-4 w-4" /></button>
-              <button onClick={() => setEditing(p)} className="p-2 rounded-full hover:bg-champagne"><Pencil className="h-4 w-4" /></button>
-              <button onClick={() => p.id && remove(p.id)} className="p-2 rounded-full hover:bg-destructive/10 text-destructive"><Trash2 className="h-4 w-4" /></button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
       <BlogCardDialog post={cardPost} onClose={() => setCardPost(null)} />
