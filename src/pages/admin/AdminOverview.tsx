@@ -246,6 +246,77 @@ export default function AdminOverview() {
         </div>
       </div>
 
+      {/* Interações no site (30 dias) */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <div className="luxe-card p-6 lg:col-span-2">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div>
+              <h3 className="font-display text-xl text-graphite">Interações no site — últimos 14 dias</h3>
+              <p className="text-xs text-muted-foreground mt-1">Cada barra é uma visita a imóvel; cada linha é uma simulação de financiamento.</p>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-rose-burnt" /> Visualizações ({propertyViews.length})</span>
+              <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-graphite" /> Simulações ({financingSims.length})</span>
+            </div>
+          </div>
+          {siteEvents.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-10 text-center">Nenhuma interação registrada ainda. Assim que visitantes abrirem imóveis ou simularem financiamento, os dados aparecem aqui.</p>
+          ) : (
+            <div className="flex items-end gap-1.5 h-40">
+              {interDays.map((d, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                  <div className="w-full flex items-end gap-0.5 h-32">
+                    <div className="flex-1 bg-gradient-to-t from-rose-burnt to-rose-blush rounded-t-sm transition group-hover:opacity-80" style={{ height: `${(d.views / maxInter) * 100}%`, minHeight: d.views ? 4 : 1 }} title={`${d.views} visualizações`} />
+                    <div className="flex-1 bg-graphite rounded-t-sm transition group-hover:opacity-80" style={{ height: `${(d.sims / maxInter) * 100}%`, minHeight: d.sims ? 4 : 1 }} title={`${d.sims} simulações`} />
+                  </div>
+                  <span className="text-[9px] text-muted-foreground rotate-45 origin-left translate-y-1 whitespace-nowrap">{d.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-rose-burnt/10 text-rose-burnt"><Eye className="h-4 w-4" /></div>
+              <div>
+                <p className="font-display text-2xl text-graphite">{propertyViews.length}</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Visualizações de imóveis</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-graphite/10 text-graphite"><Calculator className="h-4 w-4" /></div>
+              <div>
+                <p className="font-display text-2xl text-graphite">{financingSims.length}</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Simulações de financiamento</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="luxe-card p-6">
+          <h3 className="font-display text-xl text-graphite mb-4">Imóveis mais vistos</h3>
+          {topViewed.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Sem visualizações registradas.</p>
+          ) : (
+            <div className="space-y-3">
+              {topViewed.map(([id, v]) => {
+                const pct = (v.count / topViewed[0][1].count) * 100;
+                return (
+                  <div key={id}>
+                    <div className="flex items-center justify-between text-sm mb-1 gap-2">
+                      <span className="text-graphite truncate">{v.title}</span>
+                      <span className="text-muted-foreground shrink-0">{v.count}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-champagne overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-rose-burnt to-rose-blush" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Properties stats */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="luxe-card p-6">
