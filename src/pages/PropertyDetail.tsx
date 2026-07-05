@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, BedDouble, Maximize2, Car, Bath, MapPin, Play } from "lucide-react";
 import Seo from "@/components/Seo";
@@ -6,6 +7,7 @@ import { formatPrice, wa } from "@/lib/whatsapp";
 import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
 import FinancingSimulator from "@/components/FinancingSimulator";
 import { WaLink } from "@/components/WaLink";
+import { track } from "@/lib/track";
 
 function getEmbedUrl(url: string): string | null {
   try {
