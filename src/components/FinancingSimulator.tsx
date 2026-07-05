@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Calculator, ExternalLink } from "lucide-react";
+import { track } from "@/lib/track";
 
 interface Props {
   propertyPrice: number;
+  propertyId?: string;
 }
 
 const fmt = (n: number) =>
@@ -29,7 +31,7 @@ const LINES: Record<LineKey, {
   mcmv4: { name: "MCMV · Faixa 4",         rate: 10.50, maxLtv: 80, maxYears: 35, income: "Renda de R$ 8.600 a R$ 12.000/mês",    note: "Nova faixa (2024). Taxa ~10,5% a.a., teto do imóvel R$ 500 mil." },
 };
 
-export default function FinancingSimulator({ propertyPrice }: Props) {
+export default function FinancingSimulator({ propertyPrice, propertyId }: Props) {
   const [line, setLine] = useState<LineKey>("sbpe");
   const [downPct, setDownPct] = useState(30);
   const [years, setYears] = useState(30);
@@ -107,6 +109,28 @@ export default function FinancingSimulator({ propertyPrice }: Props) {
 
     return { downValue, loan, firstPayment, lastPayment, totalPaid, totalInterest };
   }, [propertyPrice, downPct, years, system, rate, cfg.maxYears]);
+
+  // Registra a simulação (debounce 1,2s pra não spammar em cada slide)
+  const firstRun = useRef(true);
+  useEffect(() => {
+    if (firstRun.current) { firstRun.current = false; return; }
+    const t = setTimeout(() => {
+      track("financing_simulation", {
+        property_id: propertyId ?? null,
+        payload: {
+          line,
+          system,
+          price: Number(propertyPrice) || 0,
+          down_pct: downPct,
+          years,
+          rate,
+          first_payment: Math.round(result.firstPayment),
+          total_paid: Math.round(result.totalPaid),
+        },
+      });
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [line, system, downPct, years, propertyPrice, propertyId, rate, result.firstPayment, result.totalPaid]);
 
   const caixaUrl = "https://www8.caixa.gov.br/siopiinternet-web/simulaOperacaoInternet.do?method=inicializarCasoUso";
 

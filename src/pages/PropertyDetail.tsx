@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, BedDouble, Maximize2, Car, Bath, MapPin, Play } from "lucide-react";
 import Seo from "@/components/Seo";
@@ -6,6 +7,7 @@ import { formatPrice, wa } from "@/lib/whatsapp";
 import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
 import FinancingSimulator from "@/components/FinancingSimulator";
 import { WaLink } from "@/components/WaLink";
+import { track } from "@/lib/track";
 
 function getEmbedUrl(url: string): string | null {
   try {
@@ -34,6 +36,15 @@ function getEmbedUrl(url: string): string | null {
 export default function PropertyDetail() {
   const { slug } = useParams();
   const { data: p, isLoading } = useProperty(slug);
+
+  useEffect(() => {
+    if (p?.id) {
+      track("property_view", {
+        property_id: p.id,
+        payload: { slug: p.slug, title: p.title, price: p.price, neighborhood: p.neighborhood_name },
+      });
+    }
+  }, [p?.id]);
 
   if (isLoading) return <div className="container-editorial py-20 text-center font-display text-2xl">Carregando…</div>;
   if (!p) return <div className="container-editorial py-20 text-center font-display text-2xl">Imóvel não encontrado.</div>;
@@ -101,7 +112,7 @@ export default function PropertyDetail() {
 
             {p.price && Number(p.price) > 0 && (
               <div className="mt-8">
-                <FinancingSimulator propertyPrice={Number(p.price)} />
+                <FinancingSimulator propertyPrice={Number(p.price)} propertyId={p.id} />
               </div>
             )}
           </div>
