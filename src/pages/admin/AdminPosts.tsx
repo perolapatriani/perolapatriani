@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Sparkles, Share2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Share2, CalendarClock } from "lucide-react";
 import BlogCardDialog from "@/components/admin/BlogCardDialog";
 import { Field, TextInput, TextArea, PrimaryButton, GhostButton } from "@/components/admin/Field";
 import ImageUploader from "@/components/admin/ImageUploader";
@@ -11,9 +11,9 @@ import { slugify } from "@/lib/slug";
 type Post = {
   id?: string; title: string; slug: string; excerpt: string | null;
   content: string | null; cover_url: string | null; author: string | null;
-  is_published: boolean; published_at: string | null;
+  is_published: boolean; published_at: string | null; scheduled_for: string | null;
 };
-const empty: Post = { title: "", slug: "", excerpt: "", content: "", cover_url: null, author: "Pérola Patriani", is_published: true, published_at: null };
+const empty: Post = { title: "", slug: "", excerpt: "", content: "", cover_url: null, author: "Pérola Patriani", is_published: false, published_at: null, scheduled_for: null };
 
 export default function AdminPosts() {
   const qc = useQueryClient();
