@@ -31,7 +31,7 @@ const LINES: Record<LineKey, {
   mcmv4: { name: "MCMV · Faixa 4",         rate: 10.50, maxLtv: 80, maxYears: 35, income: "Renda de R$ 8.600 a R$ 12.000/mês",    note: "Nova faixa (2024). Taxa ~10,5% a.a., teto do imóvel R$ 500 mil." },
 };
 
-export default function FinancingSimulator({ propertyPrice }: Props) {
+export default function FinancingSimulator({ propertyPrice, propertyId }: Props) {
   const [line, setLine] = useState<LineKey>("sbpe");
   const [downPct, setDownPct] = useState(30);
   const [years, setYears] = useState(30);
