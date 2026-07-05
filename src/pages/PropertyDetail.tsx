@@ -112,7 +112,7 @@ export default function PropertyDetail() {
 
             {p.price && Number(p.price) > 0 && (
               <div className="mt-8">
-                <FinancingSimulator propertyPrice={Number(p.price)} />
+                <FinancingSimulator propertyPrice={Number(p.price)} propertyId={p.id} />
               </div>
             )}
           </div>
