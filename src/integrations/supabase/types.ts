@@ -311,6 +311,7 @@ export type Database = {
           id: string
           is_published: boolean
           published_at: string | null
+          scheduled_for: string | null
           slug: string
           title: string
           updated_at: string
@@ -324,6 +325,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           published_at?: string | null
+          scheduled_for?: string | null
           slug: string
           title: string
           updated_at?: string
@@ -337,6 +339,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           published_at?: string | null
+          scheduled_for?: string | null
           slug?: string
           title?: string
           updated_at?: string
@@ -504,6 +507,44 @@ export type Database = {
         }
         Relationships: []
       }
+      site_events: {
+        Row: {
+          created_at: string
+          id: string
+          path: string | null
+          payload: Json
+          property_id: string | null
+          session_id: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          path?: string | null
+          payload?: Json
+          property_id?: string | null
+          session_id?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          path?: string | null
+          payload?: Json
+          property_id?: string | null
+          session_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_events_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       testimonials: {
         Row: {
           client_name: string
@@ -585,6 +626,7 @@ export type Database = {
       }
       normalize_email: { Args: { e: string }; Returns: string }
       normalize_phone: { Args: { p: string }; Returns: string }
+      publish_scheduled_posts: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "editor"
