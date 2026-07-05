@@ -60,7 +60,47 @@ export default function AdminOverview() {
       return data as Lead[];
     },
   });
+  const { data: siteEvents = [] } = useQuery({
+    queryKey: ["admin", "metrics", "site_events"],
+    queryFn: async () => {
+      const since = new Date(Date.now() - 30 * 864e5).toISOString();
+      const { data, error } = await supabase
+        .from("site_events")
+        .select("id,type,property_id,payload,created_at,path")
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .limit(2000);
+      if (error) throw error;
+      return data as { id: string; type: string; property_id: string | null; payload: any; created_at: string; path: string | null }[];
+    },
+  });
 
+  const propertyViews = siteEvents.filter((e) => e.type === "property_view");
+  const financingSims = siteEvents.filter((e) => e.type === "financing_simulation");
+
+  // 14-day interactions series
+  const interDays: { label: string; views: number; sims: number }[] = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i);
+    const next = new Date(d); next.setDate(d.getDate() + 1);
+    const views = propertyViews.filter((e) => { const t = +new Date(e.created_at); return t >= +d && t < +next; }).length;
+    const sims = financingSims.filter((e) => { const t = +new Date(e.created_at); return t >= +d && t < +next; }).length;
+    interDays.push({ label: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }), views, sims });
+  }
+  const maxInter = Math.max(1, ...interDays.map((d) => Math.max(d.views, d.sims)));
+
+  // Top viewed properties (last 30d)
+  const viewCounts = new Map<string, { count: number; title: string }>();
+  propertyViews.forEach((e) => {
+    if (!e.property_id) return;
+    const cur = viewCounts.get(e.property_id) || { count: 0, title: e.payload?.title || "Imóvel" };
+    cur.count += 1;
+    cur.title = e.payload?.title || cur.title;
+    viewCounts.set(e.property_id, cur);
+  });
+  const topViewed = [...viewCounts.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 5);
+
+  
   const weekStart = startOfWeek().getTime();
   const prevStart = startOfPrevWeek().getTime();
   const inWeek = (arr: Lead[]) =>
