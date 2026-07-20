@@ -18,6 +18,7 @@ import BlogPost from "./pages/BlogPost";
 import Contact from "./pages/Contact";
 import Thanks from "./pages/Thanks";
 import Auth from "./pages/Auth";
+import OAuthConsent from "./pages/OAuthConsent";
 import Admin from "./pages/Admin";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminProperties from "./pages/admin/AdminProperties";
