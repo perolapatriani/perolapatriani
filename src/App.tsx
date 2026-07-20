@@ -18,6 +18,7 @@ import BlogPost from "./pages/BlogPost";
 import Contact from "./pages/Contact";
 import Thanks from "./pages/Thanks";
 import Auth from "./pages/Auth";
+import OAuthConsent from "./pages/OAuthConsent";
 import Admin from "./pages/Admin";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminProperties from "./pages/admin/AdminProperties";
@@ -68,6 +69,7 @@ const App = () => (
               <Route path="/match" element={<Match />} />
               <Route path="/obrigado" element={<Thanks />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/admin" element={<Admin />}>
                 <Route index element={<AdminOverview />} />
                 <Route path="crm" element={<AdminCrm />} />
