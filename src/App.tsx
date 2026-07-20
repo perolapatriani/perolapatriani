@@ -69,6 +69,7 @@ const App = () => (
               <Route path="/match" element={<Match />} />
               <Route path="/obrigado" element={<Thanks />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/admin" element={<Admin />}>
                 <Route index element={<AdminOverview />} />
                 <Route path="crm" element={<AdminCrm />} />
