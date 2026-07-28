@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, BedDouble, Maximize2, Car, Bath, MapPin, Play } from "lucide-react";
-import Seo from "@/components/Seo";
+import Seo, { breadcrumbLd, SITE_URL } from "@/components/Seo";
+import Breadcrumbs from "@/components/Breadcrumbs";
+
 import { useProperty } from "@/hooks/useContent";
 import { formatPrice, wa } from "@/lib/whatsapp";
 import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
