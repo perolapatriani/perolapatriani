@@ -14,4 +14,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://perolapatriani.lovable.app/sitemap.xml
+Sitemap: https://atmsbgapyenaikbpjtuz.supabase.co/functions/v1/sitemap
