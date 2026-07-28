@@ -35,6 +35,9 @@ import AdminSellerLeads from "./pages/admin/AdminSellerLeads";
 import AdminMatchLeads from "./pages/admin/AdminMatchLeads";
 import AdminCrm from "./pages/admin/AdminCrm";
 import AdminCrmContact from "./pages/admin/AdminCrmContact";
+import AdminAutomation from "./pages/admin/AdminAutomation";
+import AdminIntegrations from "./pages/admin/AdminIntegrations";
+
 
 import { CompareProvider } from "./hooks/useCompare";
 import CompareBar from "./components/CompareBar";
@@ -83,6 +86,9 @@ const App = () => (
                 <Route path="bairros" element={<AdminNeighborhoods />} />
                 <Route path="depoimentos" element={<AdminTestimonials />} />
                 <Route path="posts" element={<AdminPosts />} />
+                <Route path="automacao" element={<AdminAutomation />} />
+                <Route path="integracoes" element={<AdminIntegrations />} />
+
               </Route>
               <Route path="*" element={<NotFound />} />
             </Route>

@@ -32,6 +32,51 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_jobs: {
+        Row: {
+          attempts: number
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          error_message: string | null
+          id: string
+          job_type: string
+          payload: Json
+          result: Json
+          run_after: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          error_message?: string | null
+          id?: string
+          job_type: string
+          payload?: Json
+          result?: Json
+          run_after?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          error_message?: string | null
+          id?: string
+          job_type?: string
+          payload?: Json
+          result?: Json
+          run_after?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_leads: {
         Row: {
           ai_qualified_at: string | null
@@ -184,6 +229,39 @@ export type Database = {
           },
         ]
       }
+      integration_settings: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          is_enabled: boolean
+          last_checked_at: string | null
+          provider: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          last_checked_at?: string | null
+          provider: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          last_checked_at?: string | null
+          provider?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       launches: {
         Row: {
           cover_url: string | null
@@ -304,12 +382,17 @@ export type Database = {
       posts: {
         Row: {
           author: string | null
+          auto_generated: boolean
           content: string | null
           cover_url: string | null
           created_at: string
           excerpt: string | null
+          faq: Json
           id: string
           is_published: boolean
+          keywords: string[]
+          meta_description: string | null
+          property_id: string | null
           published_at: string | null
           scheduled_for: string | null
           slug: string
@@ -318,12 +401,17 @@ export type Database = {
         }
         Insert: {
           author?: string | null
+          auto_generated?: boolean
           content?: string | null
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
+          faq?: Json
           id?: string
           is_published?: boolean
+          keywords?: string[]
+          meta_description?: string | null
+          property_id?: string | null
           published_at?: string | null
           scheduled_for?: string | null
           slug: string
@@ -332,12 +420,17 @@ export type Database = {
         }
         Update: {
           author?: string | null
+          auto_generated?: boolean
           content?: string | null
           cover_url?: string | null
           created_at?: string
           excerpt?: string | null
+          faq?: Json
           id?: string
           is_published?: boolean
+          keywords?: string[]
+          meta_description?: string | null
+          property_id?: string | null
           published_at?: string | null
           scheduled_for?: string | null
           slug?: string
@@ -538,6 +631,109 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "site_events_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_posts: {
+        Row: {
+          alt_text: string | null
+          caption: string | null
+          channel: string
+          clicks: number
+          comments: number
+          created_at: string
+          error_message: string | null
+          external_id: string | null
+          hashtags: string[]
+          id: string
+          image_url: string | null
+          kind: string
+          launch_id: string | null
+          likes: number
+          link_url: string | null
+          location_name: string | null
+          metrics_updated_at: string | null
+          post_id: string | null
+          property_id: string | null
+          published_at: string | null
+          reach: number
+          scheduled_for: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          alt_text?: string | null
+          caption?: string | null
+          channel: string
+          clicks?: number
+          comments?: number
+          created_at?: string
+          error_message?: string | null
+          external_id?: string | null
+          hashtags?: string[]
+          id?: string
+          image_url?: string | null
+          kind?: string
+          launch_id?: string | null
+          likes?: number
+          link_url?: string | null
+          location_name?: string | null
+          metrics_updated_at?: string | null
+          post_id?: string | null
+          property_id?: string | null
+          published_at?: string | null
+          reach?: number
+          scheduled_for?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          alt_text?: string | null
+          caption?: string | null
+          channel?: string
+          clicks?: number
+          comments?: number
+          created_at?: string
+          error_message?: string | null
+          external_id?: string | null
+          hashtags?: string[]
+          id?: string
+          image_url?: string | null
+          kind?: string
+          launch_id?: string | null
+          likes?: number
+          link_url?: string | null
+          location_name?: string | null
+          metrics_updated_at?: string | null
+          post_id?: string | null
+          property_id?: string | null
+          published_at?: string | null
+          reach?: number
+          scheduled_for?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_posts_launch_id_fkey"
+            columns: ["launch_id"]
+            isOneToOne: false
+            referencedRelation: "launches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_posts_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_posts_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"

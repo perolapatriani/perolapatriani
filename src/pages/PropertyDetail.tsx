@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, BedDouble, Maximize2, Car, Bath, MapPin, Play } from "lucide-react";
-import Seo from "@/components/Seo";
+import Seo, { breadcrumbLd, SITE_URL } from "@/components/Seo";
+import Breadcrumbs from "@/components/Breadcrumbs";
+
 import { useProperty } from "@/hooks/useContent";
 import { formatPrice, wa } from "@/lib/whatsapp";
 import ScheduleVisitDialog from "@/components/ScheduleVisitDialog";
@@ -49,13 +51,49 @@ export default function PropertyDetail() {
   if (isLoading) return <div className="container-editorial py-20 text-center font-display text-2xl">Carregando…</div>;
   if (!p) return <div className="container-editorial py-20 text-center font-display text-2xl">Imóvel não encontrado.</div>;
 
+  const crumbs = [
+    { name: "Início", path: "/" },
+    { name: "Imóveis", path: "/imoveis" },
+    ...(p.neighborhood_name ? [{ name: p.neighborhood_name, path: "/imoveis" }] : []),
+    { name: p.title, path: `/imoveis/${p.slug}` },
+  ];
+
+  const listingLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: p.title,
+    description: p.description ?? undefined,
+    url: `${SITE_URL}/imoveis/${p.slug}`,
+    image: [p.cover_url, ...(p.photos ?? [])].filter(Boolean).slice(0, 6),
+    datePosted: p.created_at,
+    ...(p.price ? { offers: { "@type": "Offer", price: Number(p.price), priceCurrency: "BRL", availability: "https://schema.org/InStock" } } : {}),
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: p.neighborhood_name ?? undefined,
+      addressRegion: "SP",
+      addressCountry: "BR",
+    },
+    ...(p.latitude && p.longitude ? { geo: { "@type": "GeoCoordinates", latitude: p.latitude, longitude: p.longitude } } : {}),
+    numberOfRooms: p.bedrooms ?? undefined,
+    ...(p.area_m2 ? { floorSize: { "@type": "QuantitativeValue", value: Number(p.area_m2), unitCode: "MTK" } } : {}),
+  };
+
   return (
     <>
-      <Seo title={`${p.title} · Pérola Patriani`} description={p.description ?? undefined} image={p.cover_url ?? undefined} path={`/imoveis/${p.slug}`} />
+      <Seo
+        title={`${p.title} · Pérola Patriani`}
+        description={p.description ?? undefined}
+        image={p.cover_url ?? undefined}
+        path={`/imoveis/${p.slug}`}
+        type="article"
+        jsonLd={[listingLd, breadcrumbLd(crumbs)]}
+      />
       <section className="container-editorial py-12">
+        <Breadcrumbs items={crumbs} />
         <Link to="/imoveis" className="inline-flex items-center gap-2 text-sm text-muted-foreground story-link mb-8">
           <ArrowLeft className="h-4 w-4" /> Voltar ao portfólio
         </Link>
+
 
         <div className="grid lg:grid-cols-3 gap-4 mb-12">
           <div className="lg:col-span-2 aspect-[4/3] rounded-3xl overflow-hidden">
