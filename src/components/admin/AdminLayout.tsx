@@ -1,7 +1,7 @@
 import { useEffect, useState, ReactNode } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Building2, Sparkles, MapPin, MessageSquareQuote, FileText, LayoutDashboard, LogOut, Users, Home, Wand2, Contact } from "lucide-react";
+import { Building2, Sparkles, MapPin, MessageSquareQuote, FileText, LayoutDashboard, LogOut, Users, Home, Wand2, Contact, Megaphone, Plug } from "lucide-react";
 import Seo from "@/components/Seo";
 
 const navItems = [
@@ -15,7 +15,10 @@ const navItems = [
   { to: "/admin/bairros", label: "Bairros", icon: MapPin },
   { to: "/admin/depoimentos", label: "Depoimentos", icon: MessageSquareQuote },
   { to: "/admin/posts", label: "Blog", icon: FileText },
+  { to: "/admin/automacao", label: "Automação", icon: Megaphone },
+  { to: "/admin/integracoes", label: "Integrações", icon: Plug },
 ];
+
 
 
 export default function AdminLayout({ children }: { children?: ReactNode }) {
