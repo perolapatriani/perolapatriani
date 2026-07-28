@@ -1,74 +1,54 @@
-# Plataforma de gestão de leads (mini-CRM)
+## Objetivo
 
-Transformar os 4 formulários existentes (Contato, Vender/Avaliação, Match IA, Agendar visita) em um **CRM único** com deduplicação, histórico e exportação — tudo dentro do que o Lovable Cloud já oferece (sem custos extras).
+Você cadastra um imóvel → o sistema gera artigo SEO, imagens 1080x1350, legenda/hashtags/CTA, publica no blog, agenda e publica no Instagram (Feed + Stories), compartilha em outras redes e registra métricas.
 
-## O que muda para o visitante
-Nada. Os formulários continuam iguais.
+## O que já existe (aproveitamos)
 
-## O que muda para você (admin)
+- CMS de posts com agendamento automático (`posts` + cron `publish_scheduled_posts`)
+- Geração de conteúdo social por IA (`generate-social-content`, `generate-property-copy`)
+- Gerador de cards Instagram/TikTok em canvas (`InstagramCardDialog`, `BlogCardDialog`)
+- CRM unificado com origem de lead e timeline
+- Storage `media` para imagens
 
-### 1. Tabela única de contatos (`crm_contacts`)
-- Cada pessoa vira **um único registro**, identificada por telefone (normalizado: só dígitos) **ou** e-mail.
-- Campos: nome, telefone, e-mail, origem inicial, tags, status do funil (novo / em contato / qualificado / visitando / proposta / fechado / perdido), score IA (quente/morno/frio), última interação, dono.
-- Se a pessoa preencher outro formulário depois, **atualiza** o registro existente e adiciona um evento no histórico — nunca duplica.
+## Realidade sobre publicação automática
 
-### 2. Timeline automática (`crm_events`)
-Cada formulário, mudança de status, e-mail enviado, nota manual ou qualificação IA cria um evento com data, tipo e payload. Exibido como linha do tempo na ficha do contato.
+Publicar no Instagram sem intervenção exige uma conta **Instagram Business** ligada a uma **Página do Facebook** e um app Meta aprovado (permissões `instagram_content_publish`, `pages_show_list`). Isso é configuração sua no painel da Meta — eu construo toda a integração, mas o token vem de você.
 
-### 3. Migração dos leads atuais
-- `contact_leads`, `seller_leads`, `match_leads` (e visitas agendadas) são **mantidos** como histórico bruto.
-- Um job de migração roda 1x e popula `crm_contacts` + `crm_events` deduplicando.
-- A partir daí, todos os formulários gravam no destino antigo **e** disparam o "merge" no CRM via trigger.
+- **Instagram Feed + Stories**: suportado pela Graph API → automação real.
+- **Facebook Page**: suportado → automação real.
+- **Threads**: API própria da Meta, suportada → automação real (mesmo fluxo de token).
+- **Pinterest**: API separada, com aprovação própria — deixo para uma fase posterior ou como "compartilhar manual".
 
-### 4. Painel CRM novo (`/admin/crm`)
-- **Lista** com busca, filtros (status, score, origem, tag, período), ordenação por última interação.
-- **Ficha do contato** com:
-  - Dados de contato + botões WhatsApp / e-mail / ligar.
-  - Timeline completa (todos os formulários, notas, mudanças de status).
-  - Kanban-style status changer.
-  - Tags editáveis.
-  - Notas manuais.
-  - Botão "Qualificar com IA" (reaproveita a função `qualify-lead`).
-- **Exportação CSV** dos contatos filtrados (1 clique).
-- **Métricas** no topo: total, novos na semana, taxa de conversão, leads quentes pendentes.
+Cloudflare Images não é necessário: uso o Storage do próprio backend (gratuito, já configurado). Para IA, uso a IA integrada do Lovable ou sua chave Gemini já existente em vez da OpenAI (mesma qualidade, sem custo extra) — se preferir OpenAI, você fornece a chave.
 
-### 5. Substituição gradual das abas antigas
-As abas atuais (Leads / Captações / Match IA) viram **filtros** dentro do CRM (origem = contato / avaliacao / match). Mantemos os links antigos funcionando.
+## Fases
+
+### Fase 1 — Motor de conteúdo automático
+- Tabela `automation_jobs` (fila) + `social_posts` (post gerado, canal, status, agendamento, métricas).
+- Edge function `auto-publish-property`: ao publicar um imóvel, gera artigo SEO completo (H1, H2, FAQ, palavras-chave, meta description, links internos), cria o post no blog com slug amigável e artigos relacionados.
+- Renderização das imagens 1080x1350 no servidor, salvas no Storage.
+- Sitemap regenerado automaticamente incluindo imóveis e artigos.
+
+### Fase 2 — SEO completo no site
+- JSON-LD por página: `RealEstateListing`, `Article`, `FAQPage`, `BreadcrumbList`.
+- Breadcrumbs visuais, Open Graph e Twitter Cards por rota, linkagem interna automática entre artigos e imóveis.
+
+### Fase 3 — Publicação nas redes
+- Tela **Integrações** no admin para conectar Instagram Business, Facebook, Threads, Meta Pixel, Google Analytics e Search Console.
+- Edge functions `publish-instagram` (Feed + Stories com link), `publish-facebook`, `publish-threads`.
+- Cron a cada 15 min processa a fila de posts agendados.
+
+### Fase 4 — Métricas e painel
+- Cron diário puxa alcance, curtidas, comentários e cliques da Graph API para `social_posts`.
+- Dashboard: calendário editorial, agendados, publicados, pendentes, falhas, gráficos de desempenho e leads por origem, com botão de gerar/publicar manualmente.
 
 ## Detalhes técnicos
 
-**Banco (1 migration):**
-```
-crm_contacts(id, name, phone_normalized UNIQUE, email_normalized UNIQUE,
-  raw_phone, raw_email, status, ai_score, ai_summary, tags text[],
-  source_first, source_last, owner_id, last_interaction_at, created_at, updated_at)
+- Banco: `social_posts` (canal, status, `scheduled_for`, `published_at`, `external_id`, `reach`, `likes`, `comments`, `clicks`), `automation_jobs`, `integration_settings` (tokens em secrets, nunca no banco).
+- Imagens geradas server-side e servidas por URL pública — a Graph API exige URL acessível.
+- Todas as functions com validação de entrada, RLS admin-only e tratamento de erro sem vazar respostas de API.
+- Cron via `pg_cron` + `pg_net`, já habilitados.
 
-crm_events(id, contact_id FK, type, source, title, payload jsonb,
-  created_by, created_at)
-```
-RLS: apenas admins (`has_role`) leem/escrevem. Service role total.
+## Ordem de entrega
 
-**Função `merge_lead(name, phone, email, source, payload jsonb)`** (SECURITY DEFINER):
-1. Normaliza telefone (só dígitos, últimos 11) e email (lower/trim).
-2. Procura contato por phone_normalized OU email_normalized.
-3. Insere ou atualiza; preenche campos vazios; atualiza `last_interaction_at` e `source_last`.
-4. Insere evento em `crm_events`.
-5. Retorna contact_id.
-
-**Triggers** em `contact_leads`, `seller_leads`, `match_leads` (AFTER INSERT) chamam `merge_lead`. Garante que qualquer formulário — atual ou futuro — alimenta o CRM automaticamente.
-
-**Frontend:**
-- `src/pages/admin/AdminCrm.tsx` (lista + filtros + export CSV).
-- `src/pages/admin/AdminCrmContact.tsx` (ficha + timeline + notas).
-- Rota `/admin/crm` e `/admin/crm/:id` adicionadas em `App.tsx` e `AdminLayout.tsx`.
-- Export CSV client-side (sem dependência nova).
-
-**Custo:** zero. Tudo roda no Postgres/Edge/Storage já incluídos no Lovable Cloud. IA só consome crédito quando você clicar em "Qualificar".
-
-## Fora desta entrega (posso fazer depois se quiser)
-- E-mail automático de follow-up por status.
-- Integração com Google Calendar nas visitas.
-- Pipeline kanban arrastável (drag-and-drop).
-- Relatório PDF mensal.
-
-Quer que eu siga com isso exatamente, ou ajustar algo (campos, status do funil, nome da aba)?
+Começo pela Fase 1 + 2 (funciona sozinho, sem depender de aprovação da Meta). Depois, quando você tiver o app Meta criado, ligamos a Fase 3 e 4.
